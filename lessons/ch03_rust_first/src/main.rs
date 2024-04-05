@@ -6,7 +6,8 @@
 // 5. rust test lens: 快速运行某个rust测试
 // 6. tabnine: 基于ai的自动补全(tabnine enterprise是其企业版)
 
-use std::{fs};
+use std::fs;
+use reqwest;
 
 fn apply(v: i32, f: fn(i32)->i32) -> i32 {
     return f(v);
@@ -101,9 +102,8 @@ fn process_message(event: &Event) {
     }
 }
 
-pub fn ch03_first() {
-
-    /* 一个实用的rust程序 */
+fn main() {
+    println!("Hello, world!");
 
     let url = "https://www.rust-lang.org/";
     let output = "rust.md";

@@ -1,5 +1,5 @@
-
-pub fn ch01_memory() {
+fn main() {
+    println!("Hello, world!");
     // 栈
 
     // 字符串常量"hello world"编译时被存入exe的.RODATA段(gcc)或.RDATA段(vc++),然后在程序加载时获得一个固定的地址.
@@ -9,6 +9,4 @@ pub fn ch01_memory() {
     let s = "hello world".to_string();
 
     // 堆
-
-    
 }
