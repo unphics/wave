@@ -1,4 +1,4 @@
-workspace = { members = ["lessons/ch01_memory", "lessons/ch03_rust_first"] }
+workspace = { members = ["lessons/ch01_memory", "lessons/ch03_rust_first", "lessons/ch04_CLI", "lessons/ch04_CLI/ch04_CLI", "lessons/ch04_img_svr"] }
 
 [package]
 name = "wave"
