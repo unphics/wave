@@ -1,10 +1,8 @@
-workspace = { members = ["book/ch20_web_svr", "test/client"] }
-
-
 [package]
-name = "wave"
+name = "ch20_web_svr"
 version = "0.1.0"
 edition = "2021"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

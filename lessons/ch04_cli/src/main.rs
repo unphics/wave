@@ -224,4 +224,6 @@ Opts { subcmd: Post(Post { url: "httpbin.org/post", body: ["a=1", "b=2"] }) }
 
 cargo run -- get http://www.baidu.com
 
+TODO 语法高亮库syntect
+
 */
