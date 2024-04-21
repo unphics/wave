@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "wave"
+name = "ch13_closures_iterators"
 version = "0.1.0"

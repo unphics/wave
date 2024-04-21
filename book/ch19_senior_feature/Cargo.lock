@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "wave"
+name = "ch19_senior_feature"
 version = "0.1.0"
