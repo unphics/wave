@@ -9,7 +9,7 @@ use std::io;
 
 pub fn udp_chat() {
     println!("udp chat app");
-    // create("127.0.0.1:9888", "127.0.0.1:9889");
+
     let mut cnt = 0;
     let (mut src, mut tar) = (None, None);
     let mut name = String::from("user_default");
