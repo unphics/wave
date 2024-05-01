@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 
-struct _svr_base {
-    
+pub struct svr_base {
+    name: String,
 }
 
-pub trait svr_base {
-    fn new() -> _svr_base {
-        _svr_base{}
+impl svr_base {
+    pub fn new(name: String) -> svr_base {
+        svr_base{name: name}
     }
-    
+    pub fn name(&self)  -> String {
+        self.name.clone()
+    }
 }
