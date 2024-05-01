@@ -13,20 +13,18 @@ pub struct gate_svr {
 impl gate_svr {
     pub fn new(name: String) -> gate_svr {
         gate_svr{
-            name: name
+            name: name,
         }
     }
     pub fn name(&self) -> String {
         self.name.clone()
     }
-    fn svr_run(&self) {
+    fn svr_run(&mut self) {
         self.init()
     }
-    fn init(&self) {
-        // let addr: ToSocketAddrs = "127.0.0.1:9527".to_string();
-        // let sock = UdpSocket::bind(addr).exception("");
-        // if sock.is_err() {
-        //     panic
-        // }
+    fn init(&mut self) {
+        let addr = String::from("127.0.0.1:9527");
+        let sock = UdpSocket::bind(addr).expect("failed to bind addr");
+
     }
 }
