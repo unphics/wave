@@ -28,16 +28,16 @@ pub fn udp_chat() {
     }
 }
 
-fn create<A: ToSocketAddrs>(src: A, tar: A, name: String) {
+fn create<A: ToSocketAddrs>(src: A, tar: String, name: String) {
     println!("create a chat app");
     let sock = UdpSocket::bind(src);
     if sock.is_err() {
         return;
     }
     let sock = sock.unwrap();
-    if sock.connect(tar).is_err() {
-        return;
-    }
+    // if sock.connect(tar).is_err() {
+    //     return;
+    // }
     let lis_tk = sock.try_clone().unwrap();
     let rep_tk = sock.try_clone().unwrap();
     let n1 = name.clone();
@@ -46,7 +46,7 @@ fn create<A: ToSocketAddrs>(src: A, tar: A, name: String) {
         listen(lis_tk, n1)
     });
     let handle_rep = thread::spawn(move || {
-        replys(rep_tk, n2)
+        replys(rep_tk, n2, tar)
     });
     handle_lis.join();
     handle_rep.join();
@@ -68,12 +68,13 @@ fn listen(sock: UdpSocket, name: String) {
     }
 }
 
-fn replys(sock: UdpSocket, name: String) {
+fn replys(sock: UdpSocket, name: String, tar: String) {
     loop {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
         let sinfo = format!("[{}] : {}", name, input);
-        if sock.send(sinfo.as_bytes()).is_err() {
+        let tar_addr = tar.clone();
+        if sock.send_to(sinfo.as_bytes(), tar_addr).is_err() {
             continue;
         }
         println!("[{}] send info : {}", name, input);
