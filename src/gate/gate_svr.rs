@@ -8,12 +8,14 @@ use std::net::ToSocketAddrs;
 
 pub struct gate_svr {
     name: String,
+    sock: Option<UdpSocket>,
 }
 
 impl gate_svr {
     pub fn new(name: String) -> gate_svr {
         gate_svr{
             name: name,
+            sock: None,
         }
     }
     pub fn name(&self) -> String {
@@ -24,7 +26,6 @@ impl gate_svr {
     }
     fn init(&mut self) {
         let addr = String::from("127.0.0.1:9527");
-        let sock = UdpSocket::bind(addr).expect("failed to bind addr");
-
+        self.sock = Some(UdpSocket::bind(addr).expect("failed to bind addr"));
     }
 }
