@@ -1,5 +1,13 @@
+/**
+ * @file main.rs
+ * @brief 程序入口
+ * @author zys
+ * @date Thu May 02 2024 03:43:18 GMT+0800 (中国标准时间)
+ * @version 0.1
+ */
 use std::thread;
 
+mod center;
 mod udp;
 mod pb;
 mod gate;
@@ -16,7 +24,7 @@ fn main() {
     });
 
     // 跑机器人
-    bot::run_bot(bot::bot::bot_01, 1);
+    bot::run_bot(bot::gate_bot::bot_01, 1);
 
     handle.join();
 }

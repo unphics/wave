@@ -1,4 +1,11 @@
-pub mod bot;
+/**
+ * @file mod.rs
+ * @brief bot模块
+ * @author zys
+ * @date Thu May 02 2024 03:43:18 GMT+0800 (中国标准时间)
+ * @version 0.1
+ */
+pub mod gate_bot;
 
 use std::thread;
 use std::time;

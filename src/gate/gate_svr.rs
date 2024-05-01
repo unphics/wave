@@ -1,5 +1,9 @@
 /**
+ * @file gate_svr.rs
  * @brief 网关服务器
+ * @author zys
+ * @date Thu May 02 2024 03:43:18 GMT+0800 (中国标准时间)
+ * @version 0.1
  * @descript 
  */
 use crate::cfg;

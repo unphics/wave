@@ -1,11 +1,14 @@
+/**
+ * @file udp_chat.rs
+ * @brief udp 示例
+ * @author zys
+ * @date Thu May 02 2024 03:43:18 GMT+0800 (中国标准时间)
+ * @version 0.1
+ */
 use std::net::UdpSocket;
 use std::net::ToSocketAddrs;
 use std::thread;
 use std::io;
-
-/**
- * udp 示例
- */
 
 pub fn udp_chat() {
     println!("udp chat app");
