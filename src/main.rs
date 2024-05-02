@@ -18,20 +18,14 @@ fn main() {
     // pb::example();
     // udp::udp_chat::udp_chat();
 
-    // let handle = thread::spawn(|| {
-    //     let mut gate_svr = gate::gate_svr::gate_svr::new("gate".to_string());
-    //     gate_svr.begin_listen();
-    // });
-
     let handle = thread::spawn(|| {
         let mut center_svr = center::center_svr::center_svr::new("center".to_string());
         center_svr.run_center();
     });
 
     // 跑机器人
-    bot::run_bot(bot::gate_bot::bot_01, 1);
+    // bot::run_bot(bot::gate_bot::bot_01, 1);
     
-    // handle.join();
-    handle.join();
+    handle.join().expect("");
     
 }

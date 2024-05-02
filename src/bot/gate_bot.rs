@@ -17,7 +17,7 @@ pub fn bot_01() {
         let msg = String::from("bot_01 : qqqqqqqqqq");
         let len = msg.len();
         let mut bytes = Vec::new();
-        let mut proto: u16 = 1001;
+        let proto: u16 = 1001;
         bytes.extend_from_slice(&len.to_be_bytes());
         bytes.extend_from_slice(&proto.to_be_bytes());
         bytes.extend_from_slice(msg.as_bytes());

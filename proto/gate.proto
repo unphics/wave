@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package gate;
+
+// 客户端请求登录
+message CSReqLogin {
+    int32 Account       = 1; // 账号
+    string Passwword    = 2; // 密码
+}
+// 服务端回复登录
+message CSRspLogin {
+    bool Result     = 1; // 登录结果
+    int32 ErrorCode = 2; // 错误码(如有)
+}
+
+// 客户端请求注册
+message CSReqRegister {
+    int32 Account       = 1; // 账号
+    string Passwword    = 2; // 密码
+}
+// 服务端回复注册
+message CSRspRegister {
+    bool Result     = 1; // 注册结果
+    int32 ErrorCode = 2; // 错误码(如有)
+}
+
+// 客户端请求版本一致性检查
+message CSReqVersionCheck {
+    string Code = 1;
+}
+// 服务端回复版本一致性检查
+message CSRspVersionCheck {
+    int32 ErrorCode = 1;
+}
+
+// 网关服务器协议
+message GateMsgGate {
+    oneof Data {
+        CSReqLogin CSReqLogin               = 1;
+        CSRspLogin CSRspLogin               = 2;
+        CSReqRegister CSReqRegister         = 3;
+        CSRspRegister CSRspRegister         = 4;
+        CSReqVersionCheck CSReqVersionCheck = 5;
+        CSRspVersionCheck CSRspVersionCheck = 6;
+    }
+}
