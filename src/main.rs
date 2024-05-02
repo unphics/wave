@@ -3,7 +3,7 @@
  * @brief 程序入口
  * @author zys
  * @date Thu May 02 2024 03:43:18 GMT+0800 (中国标准时间)
- * @version 0.1
+ * @version 0.2
  */
 use std::thread;
 
@@ -13,6 +13,7 @@ mod pb;
 mod gate;
 mod cfg;
 mod bot;
+mod sqlite3;
 fn main() {
     println!("====== wave begin ======");
     // pb::example();
@@ -29,6 +30,7 @@ fn wave_svr_run() {
     // 跑机器人
     // bot::run_bot(bot::gate_bot::bot_01, 1);
     bot::run_bot(bot::gate_bot::bot_login, 1);
+    // bot::run_bot(bot::gate_bot::bot_register, 1);
     
     handle.join().expect("");
 }

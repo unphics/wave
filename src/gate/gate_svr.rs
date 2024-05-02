@@ -1,11 +1,12 @@
 use prost::Message;
+use sqlite::State;
 
 /**
  * @file gate_svr.rs
  * @brief 网关服务器
  * @author zys
  * @date Thu May 02 2024 03:43:18 GMT+0800 (中国标准时间)
- * @version 0.1
+ * @version 0.2
  * @descript 处理客户端连接, 处理客户端登入, 分发客户端消息, 创建客户端代理, 分发客户端代理, 管理客户端代理
  */
 use crate::cfg;
@@ -13,6 +14,7 @@ use crate::pb::gate::CsReqLogin;
 use std::net::UdpSocket;
 use std::net::ToSocketAddrs;
 use crate::pb;
+use crate::sqlite3;
 
 pub struct gate_svr {
     name: String,
@@ -57,10 +59,30 @@ impl gate_svr {
             10001 => {
                 let msg = pb::gate::CsReqLogin::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
                 println!("client request login: {:?}", msg);
+
+                if sqlite3::data::exit_row("users", msg.account as i64) {
+                    println!("账号存在, 登录成功");
+                } else {
+                    println!("账号不存在, 需要注册");
+                }
             }
             10003 => {
                 let msg = pb::gate::CsReqRegister::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
                 println!("client request register: {:?}", msg);
+                if sqlite3::data::exit_row("users", msg.account as i64) {
+                    println!("账号已存在, 不需要注册");
+                } else {
+                    println!("账号不存在, 可以注册");
+
+                    if sqlite3::data::insert_row("users", "account, password", "?, ?", |statement: &mut sqlite::Statement| {
+                        statement.bind((1, msg.account as i64)).expect("state.bind");
+                        statement.bind((2, msg.passwword.as_str())).expect("state.bind");
+                    }) {
+                        println!("注册成功");
+                    } else {
+                        println!("注册失败");
+                    }
+                }
             }
             _ => {
                 println!("undefined proto !!!");
