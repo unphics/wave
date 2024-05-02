@@ -28,6 +28,7 @@ impl gate_svr {
     pub fn begin_listen(&mut self) {
         self.sock = Some(UdpSocket::bind(String::from(cfg::SERVER_ADDR)).expect("failed to bind addr"));
         if let Some(sock) = &mut self.sock {
+            let mut recv_count = 0;
             loop {
                 let mut buf = [0u8; cfg::LISTEN_BUF_SIZE];
                 let (size, addr) = sock.recv_from(&mut buf).expect("failed to recv");
@@ -47,7 +48,9 @@ impl gate_svr {
                     }
                     msg.push(*v as char);
                 }
-                println!("recv: len = {}, proto = {}, msg = {}", len, proto, msg);
+                recv_count += 1;
+                println!("recv count = {}", recv_count);
+                // println!("recv: len = {}, proto = {}, msg = {}", len, proto, msg);
             }
         }
     }

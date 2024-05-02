@@ -14,9 +14,9 @@ pub fn run_bot(f: fn(), delay_time: u64) {
     let thd_handle = std::thread::spawn(move || {
         let sleep_duration = time::Duration::from_secs(delay_time);
         thread::sleep(sleep_duration);
-        f();
-        f();
-        f();
+        for _ in 0 .. 100000 {
+            f();
+        }
     });
     // thd_handle.join();
 }

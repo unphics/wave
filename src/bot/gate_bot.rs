@@ -18,5 +18,5 @@ pub fn bot_01() {
     bytes.extend_from_slice(&proto.to_be_bytes());
     bytes.extend_from_slice(msg.as_bytes());
     sock.send_to(&bytes, cfg::SERVER_ADDR).expect("failed to send msg");
-    println!("bot_01 send msg: {}", msg);
+    // println!("bot_01 send msg: {}", msg);
 }

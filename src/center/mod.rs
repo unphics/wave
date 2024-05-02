@@ -1,1 +1,1 @@
-mod center_svr;
+pub mod center_svr;
