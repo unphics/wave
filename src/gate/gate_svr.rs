@@ -50,7 +50,7 @@ impl gate_svr {
                 }
                 recv_count += 1;
                 println!("recv count = {}", recv_count);
-                // println!("recv: len = {}, proto = {}, msg = {}", len, proto, msg);
+                println!("recv: len = {}, proto = {}, msg = {}", len, proto, msg);
             }
         }
     }
