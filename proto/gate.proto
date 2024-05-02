@@ -36,11 +36,11 @@ message CSRspVersionCheck {
 // 网关服务器协议
 message GateMsgGate {
     oneof Data {
-        CSReqLogin CSReqLogin               = 1;
-        CSRspLogin CSRspLogin               = 2;
-        CSReqRegister CSReqRegister         = 3;
-        CSRspRegister CSRspRegister         = 4;
-        CSReqVersionCheck CSReqVersionCheck = 5;
-        CSRspVersionCheck CSRspVersionCheck = 6;
+        CSReqLogin CSReqLogin               = 10001;
+        CSRspLogin CSRspLogin               = 10002;
+        CSReqRegister CSReqRegister         = 10003;
+        CSRspRegister CSRspRegister         = 10004;
+        CSReqVersionCheck CSReqVersionCheck = 10005;
+        CSRspVersionCheck CSRspVersionCheck = 10006;
     }
 }

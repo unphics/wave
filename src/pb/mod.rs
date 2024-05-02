@@ -1,6 +1,7 @@
 use prost::Message;
 
 pub mod hello;
+pub mod gate;
 
 pub fn example() {
     let req = hello::HelloRequest {

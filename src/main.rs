@@ -17,7 +17,10 @@ fn main() {
     println!("====== wave begin ======");
     // pb::example();
     // udp::udp_chat::udp_chat();
+    wave_svr_run();
+}
 
+fn wave_svr_run() {
     let handle = thread::spawn(|| {
         let mut center_svr = center::center_svr::center_svr::new("center".to_string());
         center_svr.run_center();
@@ -25,7 +28,7 @@ fn main() {
 
     // 跑机器人
     // bot::run_bot(bot::gate_bot::bot_01, 1);
+    bot::run_bot(bot::gate_bot::bot_login, 1);
     
     handle.join().expect("");
-    
 }
