@@ -1,6 +1,8 @@
 
 use std::{sync::{Arc, Mutex, Weak}, thread, time};
-
+/**
+ * 解决两个线程对象相互持有的方案 ::std::enable_shared_from_this
+ */
 struct Mgr {
     num: i32,
     entity: Option<Arc<Mutex<Entity>>>,
