@@ -1,6 +1,7 @@
 use prost::Message;
 use sqlite::State;
 
+use crate::center::center_svr::center_svr;
 /**
  * @file gate_svr.rs
  * @brief 网关服务器
@@ -13,15 +14,17 @@ use crate::cfg;
 use crate::pb::gate::CsReqLogin;
 use std::net::UdpSocket;
 use std::net::ToSocketAddrs;
+use std::os::unix::net::SocketAddr;
+use std::sync::Arc;
 use crate::pb;
 use crate::sqlite3;
 
-pub struct gate_svr {
+pub struct gate_svr{
     name: String,
     sock: Option<UdpSocket>,
 }
 
-impl gate_svr {
+impl gate_svr{
     pub fn new(name: String) -> gate_svr {
         gate_svr{
             name: name,
@@ -50,9 +53,13 @@ impl gate_svr {
                 let mut pb_bytes = Vec::new();
                 pb_bytes.extend_from_slice(&buf[LEN_SIZE + 2 .. size]);
                 // 最后处理协议
-                self.decode_and_deal_pkg(proto, pb_bytes);
+                // self.decode_and_deal_pkg(proto, pb_bytes);
+                self.deal_msg(addr, proto, pb_bytes);
             }
         }
+    }
+    fn deal_msg(&self, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+
     }
     fn decode_and_deal_pkg(&self, proto: u16, pb_bytes: Vec<u8>) {
         match proto {

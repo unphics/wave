@@ -44,6 +44,7 @@ impl center_svr {
     }
     fn run_gate(&mut self) {
         let gate = Arc::new(Mutex::new(gate::gate_svr::gate_svr::new("gate".to_string())));
+
         self.gate_svr = Some(gate.clone());
         let handle = thread::spawn(move || {
             let mut gate_svr = gate.lock().expect("");

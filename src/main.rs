@@ -14,6 +14,8 @@ mod gate;
 mod cfg;
 mod bot;
 mod sqlite3;
+mod login;
+mod proxy;
 fn main() {
     println!("====== wave begin ======");
     // pb::example();
