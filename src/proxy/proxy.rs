@@ -1,5 +1,5 @@
 use std::sync::Weak;
-use tokio::sync::Mutex;
+use std::sync::Mutex;
 use crate::login::login_svr::login_svr;
 /**
  * @file proxy
@@ -26,6 +26,6 @@ impl proxy {
         return self.account;
     }
     pub fn set_login(&self, login: Weak<Mutex<login_svr>>) {
-        
+
     }
 }

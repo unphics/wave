@@ -42,7 +42,7 @@ impl login_svr {
      * @description 没有登录成功的客户端发送的都算匿名消息, 成功登录后才会走proxy
      * @todo 匿名消息的处理先放到这里, 后面出一个struct或者trait
      */
-    pub fn anonym_msg(&mut self, sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+    pub fn anonym_msg(this: Arc<Mutex<login_svr>>, sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         match proto {
             10001 => {
                 let msg = pb::gate::CsReqLogin::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
@@ -53,7 +53,7 @@ impl login_svr {
                     // todo 忘记验证密码了
                     pb::send_proto(sock, addr.clone(), proto, pb::gate::CsRspLogin{result: true,error_code: 10001});
                     // 登录成功后续流程
-                    self.create_proxy(addr, msg.account);
+                    login_svr::create_proxy(this, addr, msg.account);
                 } else {
                     println!("账号不存在, 需要注册");
                     pb::send_proto(sock, addr, proto, pb::gate::CsRspLogin{result: false,error_code: 10002});
@@ -82,13 +82,13 @@ impl login_svr {
             _ => println!("anonym_msg: undefined proto !!!")
         }
     }
-    fn create_proxy(&mut self, addr: std::net::SocketAddr, account: i32) {
+    fn create_proxy(this: Arc<Mutex<login_svr>>, addr: std::net::SocketAddr, account: i32) {
         // let gate = self.center_svr.as_ref().unwrap().upgrade().unwrap().lock().unwrap().get_gate();
         // gate.unwrap().upgrade().unwrap().lock().unwrap().on_login();
         let proxy = Arc::new(proxy::proxy::proxy::new(addr, account));
-        // let arc = Arc::new(Mutex::new(&*self));
-        // let weak: Weak<Mutex<&login_svr>> = Arc::downgrade(&arc);
-        // // proxy.set_login(weak);
-        self.proxys.insert(proxy.account(), Arc::clone(&proxy));
+        let weak = Arc::downgrade(&this);
+        proxy.set_login(weak);
+        this.lock().unwrap().proxys.insert(proxy.account(), Arc::clone(&proxy));
+        println!("服务端已经登录成功, 客户端代理已经加入");
     }
 }

@@ -85,7 +85,8 @@ impl gate_svr{
         let login = center.lock().unwrap().route_login().unwrap().upgrade().unwrap();
         if let Some(ref_sock) = &self.sock {
             let sock = ref_sock.try_clone().unwrap();
-            login.lock().unwrap().anonym_msg(sock, addr, proto, pb_bytes);
+            // login.lock().unwrap().anonym_msg(sock, addr, proto, pb_bytes);
+            login_svr::anonym_msg(login, sock, addr, proto, pb_bytes)
         }
     }
     pub fn on_login(&self) {
