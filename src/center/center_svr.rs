@@ -14,6 +14,7 @@ use std::sync::Condvar;
 use std::sync::Mutex;
 use std::thread;
 use tokio::runtime::Handle;
+use std::time;
 
 use crate::gate;
 use crate::login;
@@ -45,6 +46,9 @@ impl center_svr {
             self.cond.wait(lock);
         }
     }
+    pub fn tick(&self) {
+        println!("tick");
+    }
     pub fn shutdonw(&mut self) {
         if self.stop == true {
             return;
@@ -59,6 +63,9 @@ impl center_svr {
         let gate = Arc::new(Mutex::new(gate::gate_svr::gate_svr::new("gate".to_string())));
         {
             this.lock().expect("111").gate_svr = Some(Arc::clone(&gate));
+        }
+        {
+            this.lock().unwrap();
         }
         let weak_center = Arc::downgrade(&this);
         let handle = thread::spawn(move || {

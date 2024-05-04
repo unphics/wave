@@ -9,7 +9,7 @@ use crate::center::center_svr::center_svr;
  * @author zys
  * @date Thu May 02 2024 03:43:18 GMT+0800 (中国标准时间)
  * @version 0.2
- * @descript 处理客户端连接, 处理客户端登入, 分发客户端消息, 创建客户端代理, 分发客户端代理, 管理客户端代理
+ * @descript 处理客户端连接, 分发客户端消息, 管理客户端代理
  */
 use crate::cfg;
 use crate::login::login_svr::login_svr;
@@ -23,6 +23,7 @@ use std::sync::Mutex;
 use crate::pb;
 use crate::sqlite3;
 
+#[derive(Debug)]
 pub struct gate_svr{
     name: String,
     sock: Option<UdpSocket>,
@@ -45,7 +46,7 @@ impl gate_svr{
         self.center_svr = Some(Weak::clone(&center_svr));
         if let Some(sock) = &self.sock {
             loop {
-                let mut buf = [0u8; cfg::LISTEN_BUF_SIZE];
+                let mut buf: [u8; 1024] = [0u8; cfg::LISTEN_BUF_SIZE];
                 let (size, addr) = sock.recv_from(&mut buf).expect("failed to recv");
                 let buf = &mut buf[.. size];
                 // 协议包前usize是[内容大小段]-
@@ -70,56 +71,22 @@ impl gate_svr{
      */
     fn deal_msg(&self, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         match proto {
-            10000..=19999 => self.to_login(addr, proto, pb_bytes),
+            10000..=10999 => self.anomym_to_login(addr, proto, pb_bytes),
             _ => {
                 println!("undefined proto !!!");
             }
         }
     }
     /**
-     * @brief 创建proxy, 将消息转发到login_svr
+     * @brief 处理匿名账户消息
      */
-    fn to_login(&self, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+    fn anomym_to_login(&self, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         let center = self.center_svr.as_ref().unwrap().upgrade().unwrap();
         let login = center.lock().unwrap().route_login().unwrap().upgrade().unwrap();
-        
-    }
-    /**
-     * @brief 没有login_svr时候在gate处理, 后面废弃掉
-     */
-    fn decode_and_deal_pkg(&self, proto: u16, pb_bytes: Vec<u8>) {
-        match proto {
-            10001 => {
-                let msg = pb::gate::CsReqLogin::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
-                println!("client request login: {:?}", msg);
-
-                if sqlite3::data::exit_row("users", msg.account as i64) {
-                    println!("账号存在, 登录成功");
-                } else {
-                    println!("账号不存在, 需要注册");
-                }
-            }
-            10003 => {
-                let msg = pb::gate::CsReqRegister::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
-                println!("client request register: {:?}", msg);
-                if sqlite3::data::exit_row("users", msg.account as i64) {
-                    println!("账号已存在, 不需要注册");
-                } else {
-                    println!("账号不存在, 可以注册");
-
-                    if sqlite3::data::insert_row("users", "account, password", "?, ?", |statement: &mut sqlite::Statement| {
-                        statement.bind((1, msg.account as i64)).expect("state.bind");
-                        statement.bind((2, msg.passwword.as_str())).expect("state.bind");
-                    }) {
-                        println!("注册成功");
-                    } else {
-                        println!("注册失败");
-                    }
-                }
-            }
-            _ => {
-                println!("undefined proto !!!");
-            }
+        if let Some(ref_sock) = &self.sock {
+            let sock = ref_sock.try_clone().unwrap();
+            login.lock().unwrap().anonym_msg(sock, addr, proto, pb_bytes);
         }
     }
+
 }

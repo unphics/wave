@@ -6,7 +6,7 @@
  * @version 0.2
  */
 use std::sync::Arc;
-use std::thread;
+use std::{thread, time};
 use center::center_svr::center_svr;
 
 mod center;
@@ -30,7 +30,11 @@ fn wave_svr_run() {
         let mut center_svr = center::center_svr::center_svr::new("center".to_string());
         center_svr::run_login(Arc::clone(&center_svr));
         center_svr::run_gate(Arc::clone(&center_svr));
-        center_svr.lock().expect("center_svr.run_center()").run_center();
+        loop {
+            center_svr.lock().unwrap().tick();
+            let sleep_duration = time::Duration::from_secs(1);
+            thread::sleep(sleep_duration);
+        }
     });
 
     // 跑机器人
