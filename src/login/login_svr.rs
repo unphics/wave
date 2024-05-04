@@ -50,7 +50,7 @@ impl login_svr {
 
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号存在, 登录成功");
-                    // todo 忘记验证密码了
+                    // todo 忘记验证密码了, 而且也没验证已登录
                     pb::send_proto(sock, addr.clone(), proto, pb::gate::CsRspLogin{result: true,error_code: 10001});
                     // 登录成功后续流程
                     login_svr::create_proxy(this, addr, msg.account);
