@@ -88,5 +88,8 @@ impl gate_svr{
             login.lock().unwrap().anonym_msg(sock, addr, proto, pb_bytes);
         }
     }
+    pub fn on_login(&self) {
+        println!("on_login");
+    }
 
 }

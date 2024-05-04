@@ -92,6 +92,14 @@ impl center_svr {
         }
         return None;
     }
+    pub fn get_gate(&self) -> Option<Weak<Mutex<gate::gate_svr::gate_svr>>> {
+        if let Some(gate) = &self.gate_svr {
+            if let weak = Arc::downgrade(&gate) {
+                return Some(weak);
+            }
+        }
+        return None;
+    }
 }
 /*
 gate_svr和login_svr还有proxy怎么设计呢？

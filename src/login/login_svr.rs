@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+use std::sync::Arc;
 use std::sync::Weak;
 use std::sync::Mutex;
 use crate::center::center_svr::center_svr;
@@ -5,6 +7,7 @@ use crate::pb;
 use crate::sqlite3;
 use std::net::UdpSocket;
 use prost::Message;
+use crate::proxy;
 /**
  * @file login_svr.rs
  * @brief 登录服务器
@@ -17,6 +20,7 @@ use prost::Message;
 pub struct login_svr {
     name: String,
     center_svr: Option<Weak<Mutex<center_svr>>>,
+    proxys: HashMap<i32, Arc<proxy::proxy::proxy>>
 }
 
 impl login_svr {
@@ -24,6 +28,7 @@ impl login_svr {
         return login_svr {
             name: name,
             center_svr: None,
+            proxys: HashMap::new(),
         };
     }
     /**
@@ -37,7 +42,7 @@ impl login_svr {
      * @description 没有登录成功的客户端发送的都算匿名消息, 成功登录后才会走proxy
      * @todo 匿名消息的处理先放到这里, 后面出一个struct或者trait
      */
-    pub fn anonym_msg(&self, sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+    pub fn anonym_msg(&mut self, sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         match proto {
             10001 => {
                 let msg = pb::gate::CsReqLogin::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
@@ -45,7 +50,10 @@ impl login_svr {
 
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号存在, 登录成功");
-                    pb::send_proto(sock, addr, proto, pb::gate::CsRspLogin{result: true,error_code: 10001});
+                    // todo 忘记验证密码了
+                    pb::send_proto(sock, addr.clone(), proto, pb::gate::CsRspLogin{result: true,error_code: 10001});
+                    // 登录成功后续流程
+                    self.create_proxy(addr, msg.account);
                 } else {
                     println!("账号不存在, 需要注册");
                     pb::send_proto(sock, addr, proto, pb::gate::CsRspLogin{result: false,error_code: 10002});
@@ -73,5 +81,14 @@ impl login_svr {
             }
             _ => println!("anonym_msg: undefined proto !!!")
         }
+    }
+    fn create_proxy(&mut self, addr: std::net::SocketAddr, account: i32) {
+        // let gate = self.center_svr.as_ref().unwrap().upgrade().unwrap().lock().unwrap().get_gate();
+        // gate.unwrap().upgrade().unwrap().lock().unwrap().on_login();
+        let proxy = Arc::new(proxy::proxy::proxy::new(addr, account));
+        // let arc = Arc::new(Mutex::new(&*self));
+        // let weak: Weak<Mutex<&login_svr>> = Arc::downgrade(&arc);
+        // // proxy.set_login(weak);
+        self.proxys.insert(proxy.account(), Arc::clone(&proxy));
     }
 }

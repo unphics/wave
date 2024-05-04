@@ -1,3 +1,6 @@
+use std::sync::Weak;
+use tokio::sync::Mutex;
+use crate::login::login_svr::login_svr;
 /**
  * @file proxy
  * @brief 客户端代理
@@ -6,15 +9,23 @@
  * @version 0.1
  */
 pub struct proxy {
-    addr: String,
-    account: u32,
+    addr: std::net::SocketAddr,
+    account: i32,
+    login:Option<Weak<Mutex<login_svr>>>,
 }
 
 impl proxy {
-    pub fn new(addr: String) -> proxy {
+    pub fn new(addr: std::net::SocketAddr, account: i32) -> proxy {
         return proxy {
             addr: addr,
-            account: 0,
+            account: account,
+            login: None,
         };
+    }
+    pub fn account(&self) -> i32 {
+        return self.account;
+    }
+    pub fn set_login(&self, login: Weak<Mutex<login_svr>>) {
+        
     }
 }
