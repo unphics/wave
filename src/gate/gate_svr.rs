@@ -14,6 +14,8 @@ use crate::center::center_svr::center_svr;
 use crate::cfg;
 use crate::login::login_svr::login_svr;
 use crate::pb::gate::CsReqLogin;
+use crate::proxy::proxy::proxy;
+use std::collections::HashMap;
 use std::net::UdpSocket;
 use std::net::ToSocketAddrs;
 use std::os::unix::net::SocketAddr;
@@ -23,11 +25,12 @@ use std::sync::Mutex;
 use crate::pb;
 use crate::sqlite3;
 
-#[derive(Debug)]
+
 pub struct gate_svr{
     name: String,
     sock: Option<UdpSocket>,
     center_svr: Option<Weak<Mutex<center_svr>>>,
+    proxys: HashMap<i32, Arc<proxy>>,
 }
 
 impl gate_svr{
@@ -36,6 +39,7 @@ impl gate_svr{
             name: name,
             sock: None,
             center_svr: None,
+            proxys: HashMap::new(),
         }
     }
     pub fn name(&self) -> String {
@@ -89,8 +93,11 @@ impl gate_svr{
             login_svr::anonym_msg(login, sock, addr, proto, pb_bytes)
         }
     }
-    pub fn on_login(&self) {
-        println!("on_login");
+    /**
+     * 该账户在login_svr成功登录
+     */
+    pub fn on_login(&mut self, proxy: Arc<proxy>) {
+        self.proxys.insert(proxy.account(), proxy);
     }
 
 }

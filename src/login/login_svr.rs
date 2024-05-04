@@ -83,12 +83,14 @@ impl login_svr {
         }
     }
     fn create_proxy(this: Arc<Mutex<login_svr>>, addr: std::net::SocketAddr, account: i32) {
-        // let gate = self.center_svr.as_ref().unwrap().upgrade().unwrap().lock().unwrap().get_gate();
-        // gate.unwrap().upgrade().unwrap().lock().unwrap().on_login();
         let proxy = Arc::new(proxy::proxy::proxy::new(addr, account));
         let weak = Arc::downgrade(&this);
-        proxy.set_login(weak);
+        let arc = weak.upgrade().unwrap();
+        proxy.set_login(weak.clone());
         this.lock().unwrap().proxys.insert(proxy.account(), Arc::clone(&proxy));
         println!("服务端已经登录成功, 客户端代理已经加入");
+        
+        let gate = arc.lock().unwrap().center_svr.as_ref().unwrap().upgrade().unwrap().lock().unwrap().get_gate();
+        gate.unwrap().upgrade().unwrap().lock().unwrap().on_login(proxy);
     }
 }
