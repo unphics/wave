@@ -1,6 +1,7 @@
 use prost::Message;
 use sqlite::State;
 
+use crate::center;
 use crate::center::center_svr::center_svr;
 /**
  * @file gate_svr.rs
@@ -15,13 +16,16 @@ use crate::pb::gate::CsReqLogin;
 use std::net::UdpSocket;
 use std::net::ToSocketAddrs;
 use std::os::unix::net::SocketAddr;
+use std::sync::Weak;
 use std::sync::Arc;
+use std::sync::Mutex;
 use crate::pb;
 use crate::sqlite3;
 
 pub struct gate_svr{
     name: String,
     sock: Option<UdpSocket>,
+    center_svr: Option<Weak<Mutex<center_svr>>>,
 }
 
 impl gate_svr{
@@ -29,13 +33,15 @@ impl gate_svr{
         gate_svr{
             name: name,
             sock: None,
+            center_svr: None,
         }
     }
     pub fn name(&self) -> String {
         self.name.clone()
     }
-    pub fn begin_listen(&mut self) {
+    pub fn begin_listen(&mut self, center_svr: Weak<Mutex<center_svr>>) {
         self.sock = Some(UdpSocket::bind(String::from(cfg::SERVER_ADDR)).expect("failed to bind addr"));
+        self.center_svr = Some(Weak::clone(&center_svr));
         if let Some(sock) = &self.sock {
             loop {
                 let mut buf = [0u8; cfg::LISTEN_BUF_SIZE];

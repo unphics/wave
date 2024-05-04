@@ -17,19 +17,17 @@ pub struct center_svr {
 }
 
 impl center_svr {
-    pub fn new(name: String) -> center_svr {
-        return  center_svr {
+    pub fn new(name: String) -> Arc<Mutex<Self>> {
+        return Arc::new(Mutex::new(center_svr {
             name: name,
             sock: None,
             gate_svr: None,
             stop: false,
             mutex: Mutex::new(()),
             cond: Condvar::new(),
-        };
+        }));
     }
     pub fn run_center(&mut self) {
-        self.run_gate();
-
         while self.stop != true {
             let mut lock = self.mutex.lock().expect("failed to lock");
             self.cond.wait(lock);
@@ -42,13 +40,14 @@ impl center_svr {
         self.stop = true;
         self.cond.notify_all();
     }
-    fn run_gate(&mut self) {
+    pub fn run_gate(this: Arc<Mutex<center_svr>>) {
         let gate = Arc::new(Mutex::new(gate::gate_svr::gate_svr::new("gate".to_string())));
-
-        self.gate_svr = Some(gate.clone());
+        {
+            this.lock().expect("111").gate_svr = Some(Arc::clone(&gate));
+        }
+        let center_weak = Arc::downgrade(&this);
         let handle = thread::spawn(move || {
-            let mut gate_svr = gate.lock().expect("");
-            gate_svr.begin_listen();
+            gate.lock().expect("222").begin_listen(center_weak);
         });
     }
 }

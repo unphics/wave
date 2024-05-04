@@ -5,7 +5,9 @@
  * @date Thu May 02 2024 03:43:18 GMT+0800 (中国标准时间)
  * @version 0.2
  */
-use std::thread;
+use std::{sync::Arc, thread};
+
+use center::center_svr::center_svr;
 
 mod center;
 mod udp;
@@ -26,7 +28,8 @@ fn main() {
 fn wave_svr_run() {
     let handle = thread::spawn(|| {
         let mut center_svr = center::center_svr::center_svr::new("center".to_string());
-        center_svr.run_center();
+        center_svr::run_gate(Arc::clone(&center_svr));
+        center_svr.lock().expect("center_svr.run_center()").run_center();
     });
 
     // 跑机器人
