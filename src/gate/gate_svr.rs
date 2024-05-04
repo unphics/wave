@@ -12,6 +12,7 @@ use crate::center::center_svr::center_svr;
  * @descript 处理客户端连接, 处理客户端登入, 分发客户端消息, 创建客户端代理, 分发客户端代理, 管理客户端代理
  */
 use crate::cfg;
+use crate::login::login_svr::login_svr;
 use crate::pb::gate::CsReqLogin;
 use std::net::UdpSocket;
 use std::net::ToSocketAddrs;
@@ -64,9 +65,28 @@ impl gate_svr{
             }
         }
     }
+    /**
+     * @brief 判断消息流向
+     */
     fn deal_msg(&self, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
-
+        match proto {
+            10000..=19999 => self.to_login(addr, proto, pb_bytes),
+            _ => {
+                println!("undefined proto !!!");
+            }
+        }
     }
+    /**
+     * @brief 创建proxy, 将消息转发到login_svr
+     */
+    fn to_login(&self, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+        let center = self.center_svr.as_ref().unwrap().upgrade().unwrap();
+        let login = center.lock().unwrap().route_login().unwrap().upgrade().unwrap();
+        
+    }
+    /**
+     * @brief 没有login_svr时候在gate处理, 后面废弃掉
+     */
     fn decode_and_deal_pkg(&self, proto: u16, pb_bytes: Vec<u8>) {
         match proto {
             10001 => {

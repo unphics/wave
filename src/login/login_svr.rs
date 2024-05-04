@@ -1,3 +1,7 @@
+use std::sync::Weak;
+use std::sync::Mutex;
+use crate::center::center_svr::center_svr;
+
 
 /**
  * @file login_svr.rs
@@ -7,15 +11,23 @@
  * @version 0.1
  */
 
-struct login_svr {
+pub struct login_svr {
     name: String,
+    center_svr: Option<Weak<Mutex<center_svr>>>,
 }
 
 impl login_svr {
     pub fn new(name: String) -> login_svr {
         return login_svr {
             name: name,
+            center_svr: None,
         };
+    }
+    /**
+     * @brief init
+     */
+    pub fn begin_login(&mut self, center_svr: Weak<Mutex<center_svr>>) {
+        self.center_svr = Some(Weak::clone(&center_svr));
     }
     pub fn push_new_proxy(&self) {
         
