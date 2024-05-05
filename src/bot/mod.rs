@@ -6,6 +6,7 @@
  * @version 0.1
  */
 pub mod gate_bot;
+pub mod login_bot;
 
 use std::thread;
 use std::time;

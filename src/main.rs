@@ -39,8 +39,8 @@ fn wave_svr_run() {
 
     // 跑机器人
     // bot::run_bot(bot::gate_bot::bot_01, 1);
-    bot::run_bot(bot::gate_bot::bot_login, 1);
-    // bot::run_bot(bot::gate_bot::bot_register, 1);
+    bot::run_bot(bot::login_bot::bot_login, 1);
+    // bot::run_bot(bot::login_bot::bot_register, 1);
     
     handle.join().expect("");
 }
