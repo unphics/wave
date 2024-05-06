@@ -45,26 +45,26 @@ impl login_svr {
     pub fn anonym_msg(this: Arc<Mutex<login_svr>>, sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         match proto {
             10001 => {
-                let msg = pb::gate::CsReqLogin::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
+                let msg = pb::login::CsReqLogin::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
                 println!("client request login: {:?}", msg);
 
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号存在, 登录成功");
                     // todo 忘记验证密码了, 而且也没验证已登录
-                    pb::send_proto(sock, addr.clone(), 10002, pb::gate::CsRspLogin{result: true,error_code: 10001});
+                    pb::send_proto(sock, addr.clone(), 10002, pb::login::CsRspLogin{result: true,error_code: 10001});
                     // 登录成功后续流程
                     login_svr::create_proxy(this, addr, msg.account);
                 } else {
                     println!("账号不存在, 需要注册");
-                    pb::send_proto(sock, addr, 10002, pb::gate::CsRspLogin{result: false,error_code: 10002});
+                    pb::send_proto(sock, addr, 10002, pb::login::CsRspLogin{result: false,error_code: 10002});
                 }
             }
             10003 => {
-                let msg = pb::gate::CsReqRegister::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
+                let msg = pb::login::CsReqRegister::decode(pb_bytes.as_slice()).expect("failed to decodelogin proto");
                 println!("client request register: {:?}", msg);
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号已存在, 不需要注册");
-                    pb::send_proto(sock, addr, proto, pb::gate::CsRspLogin{result: false,error_code: 10103});
+                    pb::send_proto(sock, addr, proto, pb::login::CsRspLogin{result: false,error_code: 10103});
                 } else {
                     println!("账号不存在, 可以注册");
                     if sqlite3::data::insert_row("users", "account, password", "?, ?", |statement: &mut sqlite::Statement| {
@@ -72,10 +72,10 @@ impl login_svr {
                         statement.bind((2, msg.passwword.as_str())).expect("state.bind");
                     }) {
                         println!("注册成功");
-                        pb::send_proto(sock, addr, 10004, pb::gate::CsRspLogin{result: true,error_code: 10101});
+                        pb::send_proto(sock, addr, 10004, pb::login::CsRspLogin{result: true,error_code: 10101});
                     } else {
                         println!("注册失败");
-                        pb::send_proto(sock, addr, 10004, pb::gate::CsRspLogin{result: false,error_code: 10102});
+                        pb::send_proto(sock, addr, 10004, pb::login::CsRspLogin{result: false,error_code: 10102});
                     }
                 }
             }

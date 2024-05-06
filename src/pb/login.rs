@@ -52,12 +52,12 @@ pub struct CsRspVersionCheck {
 }
 /// 网关服务器协议
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GateMsgGate {
-    #[prost(oneof="gate_msg_gate::Data", tags="10001, 10002, 10003, 10004, 10005, 10006")]
-    pub data: ::core::option::Option<gate_msg_gate::Data>,
+pub struct LoginMsg {
+    #[prost(oneof="login_msg::Data", tags="10001, 10002, 10003, 10004, 10005, 10006")]
+    pub data: ::core::option::Option<login_msg::Data>,
 }
-/// Nested message and enum types in `GateMsgGate`.
-pub mod gate_msg_gate {
+/// Nested message and enum types in `LoginMsg`.
+pub mod login_msg {
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Data {
         #[prost(message, tag="10001")]

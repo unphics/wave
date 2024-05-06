@@ -4,7 +4,7 @@ fn main() {
         .compile_protos(
             &[
                 "proto/hello.proto",
-                "proto/gate.proto"
+                "proto/login.proto"
             ]
             , &["."]) // 要处理的proto文件
         .unwrap();

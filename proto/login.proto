@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package gate;
+package login;
 
 // 客户端请求登录
 message CSReqLogin {
@@ -34,7 +34,7 @@ message CSRspVersionCheck {
 }
 
 // 网关服务器协议
-message GateMsgGate {
+message LoginMsg {
     oneof Data {
         CSReqLogin CSReqLogin               = 10001;
         CSRspLogin CSRspLogin               = 10002;

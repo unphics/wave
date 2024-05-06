@@ -13,7 +13,7 @@ use crate::center::center_svr::center_svr;
  */
 use crate::cfg;
 use crate::login::login_svr::login_svr;
-use crate::pb::gate::CsReqLogin;
+use crate::pb::login::CsReqLogin;
 use crate::proxy::proxy::proxy;
 use std::collections::HashMap;
 use std::net::UdpSocket;
