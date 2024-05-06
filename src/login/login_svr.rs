@@ -1,4 +1,6 @@
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::ops::Deref;
 use std::sync::Arc;
 use std::sync::Weak;
 use std::sync::Mutex;
@@ -20,7 +22,7 @@ use crate::proxy;
 pub struct login_svr {
     name: String,
     center_svr: Option<Weak<Mutex<center_svr>>>,
-    proxys: HashMap<i32, Arc<proxy::proxy::proxy>>
+    proxys: HashMap<i32, Arc<proxy::proxy::proxy>>,
 }
 
 impl login_svr {
@@ -83,12 +85,12 @@ impl login_svr {
         }
     }
     fn create_proxy(this: Arc<Mutex<login_svr>>, addr: std::net::SocketAddr, account: i32) {
-        let proxy = Arc::new(proxy::proxy::proxy::new(addr, account));
+        let mut proxy = Arc::new(proxy::proxy::proxy::new(addr, account));
         let weak = Arc::downgrade(&this);
         let arc = weak.upgrade().unwrap();
-        proxy.set_login(weak.clone());
+        // proxy.set_login(weak.clone()); // todo last
         this.lock().unwrap().proxys.insert(proxy.account(), Arc::clone(&proxy));
-        println!("服务端已经登录成功, 客户端代理已经加入");
+        println!("client has been login succeed, and the proxy has been insert !");
         
         let gate = arc.lock().unwrap().center_svr.as_ref().unwrap().upgrade().unwrap().lock().unwrap().get_gate();
         gate.unwrap().upgrade().unwrap().lock().unwrap().on_login(proxy);

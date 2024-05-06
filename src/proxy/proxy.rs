@@ -1,3 +1,4 @@
+use std::ops::{Deref, DerefMut};
 use std::sync::Weak;
 use std::sync::Mutex;
 use crate::login::login_svr::login_svr;
@@ -25,7 +26,7 @@ impl proxy {
     pub fn account(&self) -> i32 {
         return self.account;
     }
-    pub fn set_login(&self, login: Weak<Mutex<login_svr>>) {
-
+    pub fn set_login(&mut self, login: Weak<Mutex<login_svr>>) {
+        self.login = Some(login);
     }
 }
