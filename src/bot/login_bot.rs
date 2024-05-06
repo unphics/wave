@@ -10,10 +10,10 @@ use std::net::{IpAddr, Ipv4Addr};
  */
 pub fn bot_login() {
     let sock = UdpSocket::bind(String::from(cfg::BOT_01_ADDR)).expect("failed to bind addr");
-    let addr = cfg::SERVER_ADDR.clone().parse::<SocketAddr>().unwrap();
-    pb::send_proto(sock.try_clone().unwrap(), addr.clone(), 10001, pb::gate::CsReqLogin {account: 11111, passwword: "11111".to_string()});
+    let saddr = cfg::SERVER_ADDR.clone().parse::<SocketAddr>().unwrap();
+    pb::send_proto(sock.try_clone().unwrap(), saddr.clone(), 10001, pb::gate::CsReqLogin {account: 11111, passwword: "11111".to_string()});
     println!("bot_login send CsReqLogin");
-    // todo last 收听结果
+    // 收听结果
     let mut buf: [u8; 1024] = [0u8; cfg::LISTEN_BUF_SIZE];
     let (size, addr) = sock.recv_from(&mut buf).expect("login_bot::bot_login()");
     let (proto, bytes) = pb::unpack_msg(&mut buf, size);

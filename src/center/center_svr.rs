@@ -100,20 +100,3 @@ impl center_svr {
         return None;
     }
 }
-/*
-gate_svr和login_svr还有proxy怎么设计呢？
-比如说gate收到一个新客户端的登录申请，那么
-gate创建一个shared_proxy索引住并发给login
-然后proxy里的current_svr=login,然后登录
-申请的协议内容发给proxy，然后proxy找到自
-己的current_svr也就是login处理登录事务
-
-比如说有gate_svr,login_svr,scene_svr,logic_svr等等
-question:
-    proxy同时只存在于一个svr吗(登录后网关服务器,场景服务器,和场景无关的纯逻辑服务器等可以同时处理一个角色)
-        答:存在多个svr, svr的weak保存在proxy中
-    gate收到的消息发给proxy, proxy转发给具体svr, 还是gate收到消息带着account_id发给具体svr
-        答:发给proxy, proxy转发给具体svr; gate中保存所有proxy
-    心跳网上都是做在gate里, 但是感觉做在proxy里也可以吧
-        答:做在proxy里, 由有tick能力的svr执行
-*/
