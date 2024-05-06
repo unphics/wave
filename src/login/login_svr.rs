@@ -51,12 +51,12 @@ impl login_svr {
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号存在, 登录成功");
                     // todo 忘记验证密码了, 而且也没验证已登录
-                    pb::send_proto(sock, addr.clone(), proto, pb::gate::CsRspLogin{result: true,error_code: 10001});
+                    pb::send_proto(sock, addr.clone(), 10002, pb::gate::CsRspLogin{result: true,error_code: 10001});
                     // 登录成功后续流程
                     login_svr::create_proxy(this, addr, msg.account);
                 } else {
                     println!("账号不存在, 需要注册");
-                    pb::send_proto(sock, addr, proto, pb::gate::CsRspLogin{result: false,error_code: 10002});
+                    pb::send_proto(sock, addr, 10002, pb::gate::CsRspLogin{result: false,error_code: 10002});
                 }
             }
             10003 => {
@@ -72,10 +72,10 @@ impl login_svr {
                         statement.bind((2, msg.passwword.as_str())).expect("state.bind");
                     }) {
                         println!("注册成功");
-                        pb::send_proto(sock, addr, proto, pb::gate::CsRspLogin{result: true,error_code: 10101});
+                        pb::send_proto(sock, addr, 10004, pb::gate::CsRspLogin{result: true,error_code: 10101});
                     } else {
                         println!("注册失败");
-                        pb::send_proto(sock, addr, proto, pb::gate::CsRspLogin{result: false,error_code: 10102});
+                        pb::send_proto(sock, addr, 10004, pb::gate::CsRspLogin{result: false,error_code: 10102});
                     }
                 }
             }

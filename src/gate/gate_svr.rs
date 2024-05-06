@@ -14,7 +14,6 @@ use crate::center::center_svr::center_svr;
 use crate::cfg;
 use crate::login::login_svr::login_svr;
 use crate::pb::gate::CsReqLogin;
-use crate::pb::unpack_udp;
 use crate::proxy::proxy::proxy;
 use std::collections::HashMap;
 use std::net::UdpSocket;
@@ -54,7 +53,7 @@ impl gate_svr{
                 let mut buf: [u8; 1024] = [0u8; cfg::LISTEN_BUF_SIZE];
                 let (size, addr) = sock.recv_from(&mut buf).expect("failed to recv");
                 // 协议解包
-                let (proto, pb_bytes) = pb::unpack_udp(&mut buf, size);
+                let (proto, pb_bytes) = pb::unpack_msg(&mut buf, size);
                 self.deal_msg(addr, proto, pb_bytes);
             }
         }

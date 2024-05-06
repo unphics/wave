@@ -52,9 +52,9 @@ pub fn serialize<T>(proto: u16, obj_pb: T) -> Vec<u8> where T: Message {
     return send_bytes;
 }
 /**
- * @brief 解开udp包得到proto段和内容段
+ * @brief 解开网络包得到proto段和内容段
  */
-pub fn unpack_udp(buf: &mut [u8; 1024], size: usize) ->(u16, Vec<u8>) {
+pub fn unpack_msg(buf: &mut [u8; 1024], size: usize) ->(u16, Vec<u8>) {
     let buf = &mut buf[.. size];
     // 协议包前usize是[内容大小段]
     const LEN_SIZE: usize = std::mem::size_of::<usize>();
