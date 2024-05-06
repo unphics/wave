@@ -14,10 +14,11 @@ pub fn bot_login() {
     pb::send_proto(sock.try_clone().unwrap(), addr.clone(), 10001, pb::gate::CsReqLogin {account: 11111, passwword: "11111".to_string()});
     println!("bot_login send CsReqLogin");
     // todo last 收听结果
+    let mut buf: [u8; 1024] = [0u8; cfg::LISTEN_BUF_SIZE];
+    
 }
-
 /**
- * 测试注册
+ * @brief 测试注册
  */
 pub fn bot_register() {
     let sock = UdpSocket::bind(String::from(cfg::BOT_01_ADDR)).expect("failed to bind addr");

@@ -14,6 +14,7 @@ use crate::center::center_svr::center_svr;
 use crate::cfg;
 use crate::login::login_svr::login_svr;
 use crate::pb::gate::CsReqLogin;
+use crate::pb::unpack_udp;
 use crate::proxy::proxy::proxy;
 use std::collections::HashMap;
 use std::net::UdpSocket;
@@ -52,20 +53,8 @@ impl gate_svr{
             loop {
                 let mut buf: [u8; 1024] = [0u8; cfg::LISTEN_BUF_SIZE];
                 let (size, addr) = sock.recv_from(&mut buf).expect("failed to recv");
-                let buf = &mut buf[.. size];
-                // 协议包前usize是[内容大小段]-
-                const LEN_SIZE: usize = std::mem::size_of::<usize>();
-                let mut len_bytes = [0; LEN_SIZE];
-                len_bytes.copy_from_slice(&buf[..LEN_SIZE]);
-                let len = usize::from_be_bytes(len_bytes);
-                // 然后前u16是[协议类型段]
-                let proto = u16::from_be_bytes([buf[LEN_SIZE], buf[LEN_SIZE + 1]]);
-                println!("recv desc: len = {}, proto = {}", len, proto);
-                // 最后是[协议内容段]
-                let mut pb_bytes = Vec::new();
-                pb_bytes.extend_from_slice(&buf[LEN_SIZE + 2 .. size]);
-                // 最后处理协议
-                // self.decode_and_deal_pkg(proto, pb_bytes);
+                // 协议解包
+                let (proto, pb_bytes) = pb::unpack_udp(&mut buf, size);
                 self.deal_msg(addr, proto, pb_bytes);
             }
         }
