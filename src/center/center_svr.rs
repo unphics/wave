@@ -41,12 +41,12 @@ impl center_svr {
         };
     }
     pub fn run_center(&self) {
-        // let mut lock = self.mutex.lock().expect("failed to lock");
-        // while !*lock {
-        //     lock = self.cond.wait(lock).unwrap();
-        // }
-        let sleep_duration = time::Duration::from_secs(5);
-        thread::sleep(sleep_duration);
+        let mut lock = self.mutex.lock().expect("failed to lock");
+        while !*lock {
+            lock = self.cond.wait(lock).unwrap();
+        }
+        // let sleep_duration = time::Duration::from_secs(5);
+        // thread::sleep(sleep_duration);
     }
     pub fn tick(&self) {
         println!("tick");

@@ -51,13 +51,9 @@ fn wave_svr_run() {
         let c = &*p_center;
         let a = c.stop;
     }
-    println!("p = {:p}", p_center);
-    let p_move_center = p_center.clone() as u8;
+    let p_move_center = p_center.clone() as usize;
     let handle = thread::spawn(move || {
-        let r = p_move_center as *mut center_svr;
-        println!("r = {:p}", p_move_center as *mut u8);
-        let center = unsafe {&*r};
-        let a = center.stop;
+        let center = unsafe {&*(p_move_center as *mut center_svr)};
         center.run_center();
     });
     handle.join().expect("center.join");
