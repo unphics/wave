@@ -13,6 +13,7 @@ use std::sync::Arc;
 use std::sync::Condvar;
 use std::sync::Mutex;
 use std::thread;
+use std::thread::sleep;
 use std::time;
 
 use crate::gate;
@@ -22,28 +23,30 @@ pub struct center_svr {
     sock: Option<UdpSocket>,
     gate_svr: Option<Arc<Mutex<gate::gate_svr::gate_svr>>>,
     login_svr: Option<Arc<Mutex<login::login_svr::login_svr>>>,
-    stop: bool,
-    mutex: Mutex<()>,
+    pub stop: bool,
+    mutex: Mutex<(bool)>,
     cond: Condvar,
 }
 
 impl center_svr {
-    pub fn new(name: String) -> Arc<Mutex<Self>> {
-        return Arc::new(Mutex::new(center_svr {
+    pub fn new(name: String) -> Self {
+        return center_svr {
             name: name,
             sock: None,
             gate_svr: None,
             login_svr: None,
             stop: false,
-            mutex: Mutex::new(()),
+            mutex: Mutex::new(false),
             cond: Condvar::new(),
-        }));
+        };
     }
-    pub fn run_center(&mut self) {
-        while self.stop != true {
-            let mut lock = self.mutex.lock().expect("failed to lock");
-            self.cond.wait(lock);
-        }
+    pub fn run_center(&self) {
+        // let mut lock = self.mutex.lock().expect("failed to lock");
+        // while !*lock {
+        //     lock = self.cond.wait(lock).unwrap();
+        // }
+        let sleep_duration = time::Duration::from_secs(5);
+        thread::sleep(sleep_duration);
     }
     pub fn tick(&self) {
         println!("tick");
