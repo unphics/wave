@@ -5,6 +5,7 @@ use std::rc::Rc;
 fn main() {
     row_ptr();
     rc_ptr();
+    deap_ptr();
 }
 // 裸指针
 fn row_ptr() {
@@ -51,4 +52,23 @@ fn rc_ptr() {
     let vec_cat_1 = vec![rc_cat_1, rc_cat_2];
     // let vec_cat_2 = vec![rc_cat_2, rc_cat_3];
     // println!("vec_cat_1: {:?}, vec_cat_2: {:?}", vec_cat_1, vec_cat_2);
+}
+
+use std::alloc::{alloc, dealloc, Layout};
+
+fn deap_ptr() {
+    let layout = Layout::new::<u16>();
+    let mut p: *mut u8 = std::ptr::null_mut();
+    {
+        unsafe {
+            let ptr = alloc(layout);
+            p = ptr.clone();
+            println!("addr: {:p}", ptr);
+            *(ptr as *mut u16) = 42;
+        }
+    }
+    unsafe {
+        println!("p = {:p}, *p = {}", p, *p);
+        dealloc(p, layout);
+    }
 }
