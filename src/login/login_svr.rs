@@ -29,7 +29,7 @@ pub struct login_svr {
     mutex: Mutex<u8>,
     cond: Condvar,
     stop: bool,
-    queue: Mutex<VecDeque<anonym_task>>,
+    anonym_queue: Mutex<VecDeque<anonym_task>>,
 }
 
 impl login_svr {
@@ -41,14 +41,14 @@ impl login_svr {
             mutex: Mutex::new(1),
             cond: Condvar::new(),
             stop: false,
-            queue: Mutex::new(VecDeque::new()),
+            anonym_queue: Mutex::new(VecDeque::new()),
         };
     }
     pub fn run_login(&mut self) {
         while !self.stop {
             let lock = self.mutex.lock().unwrap();
             self.cond.wait_while(lock, |pending| {
-                if self.queue.lock().unwrap().len() > 0 {
+                if self.anonym_queue.lock().unwrap().len() > 0 {
                     return false;
                 }
                 return true;
@@ -63,7 +63,7 @@ impl login_svr {
     // 匿名消息, 没有登录成功的客户端发送的都算匿名消息, 成功登录后才会走proxy, 匿名消息的处理先放到这里, 后面出一个struct或者trait
     pub fn send_anonym(&mut self, sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         let task = anonym_task::new(sock, addr, proto, pb_bytes);
-        self.queue.lock().unwrap().push_back(task);
+        self.anonym_queue.lock().unwrap().push_back(task);
         self.cond.notify_one();
     }
     fn create_proxy(this: Arc<Mutex<login_svr>>, addr: std::net::SocketAddr, account: i32) {
@@ -78,32 +78,32 @@ impl login_svr {
         // gate.unwrap().upgrade().unwrap().lock().unwrap().on_login(proxy);
     }
     pub fn deal_with_anonym(&mut self) {
-        if !(self.queue.lock().unwrap().len() > 0) {
+        if !(self.anonym_queue.lock().unwrap().len() > 0) {
             return;
         }
-        let task = self.queue.lock().unwrap().pop_front().unwrap();
-        match task.proto {
+        let anonym = self.anonym_queue.lock().unwrap().pop_front().unwrap();
+        match anonym.proto {
             10001 => {
-                let msg = pb::login::CsReqLogin::decode(task.pb_bytes.as_slice()).expect("failed to decodelogin proto");
+                let msg = pb::login::CsReqLogin::decode(anonym.pb_bytes.as_slice()).expect("failed to decodelogin proto");
                 println!("client request login: {:?}", msg);
 
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号存在, 登录成功");
                     // todo 忘记验证密码了, 而且也没验证已登录
-                    pb::send_proto(task.sock, task.addr.clone(), 10002, pb::login::CsRspLogin{result: true,error_code: 10001});
+                    pb::send_proto(anonym.sock, anonym.addr.clone(), 10002, pb::login::CsRspLogin{result: true,error_code: 10001});
                     // 登录成功后续流程 todo
-                    // login_svr::create_proxy(this, task.addr, msg.account);
+                    // login_svr::create_proxy(this, anonym.addr, msg.account);
                 } else {
                     println!("账号不存在, 需要注册");
-                    pb::send_proto(task.sock, task.addr, 10002, pb::login::CsRspLogin{result: false,error_code: 10002});
+                    pb::send_proto(anonym.sock, anonym.addr, 10002, pb::login::CsRspLogin{result: false,error_code: 10002});
                 }
             }
             10003 => {
-                let msg = pb::login::CsReqRegister::decode(task.pb_bytes.as_slice()).expect("failed to decodelogin proto");
+                let msg = pb::login::CsReqRegister::decode(anonym.pb_bytes.as_slice()).expect("failed to decodelogin proto");
                 println!("client request register: {:?}", msg);
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号已存在, 不需要注册");
-                    pb::send_proto(task.sock, task.addr, task.proto, pb::login::CsRspLogin{result: false,error_code: 10103});
+                    pb::send_proto(anonym.sock, anonym.addr, 10004, pb::login::CsRspLogin{result: false,error_code: 10103});
                 } else {
                     println!("账号不存在, 可以注册");
                     if sqlite3::data::insert_row("users", "account, password", "?, ?", |statement: &mut sqlite::Statement| {
@@ -111,10 +111,10 @@ impl login_svr {
                         statement.bind((2, msg.passwword.as_str())).expect("state.bind");
                     }) {
                         println!("注册成功");
-                        pb::send_proto(task.sock, task.addr, 10004, pb::login::CsRspLogin{result: true,error_code: 10101});
+                        pb::send_proto(anonym.sock, anonym.addr, 10004, pb::login::CsRspLogin{result: true,error_code: 10101});
                     } else {
                         println!("注册失败");
-                        pb::send_proto(task.sock, task.addr, 10004, pb::login::CsRspLogin{result: false,error_code: 10102});
+                        pb::send_proto(anonym.sock, anonym.addr, 10004, pb::login::CsRspLogin{result: false,error_code: 10102});
                     }
                 }
             }

@@ -40,7 +40,7 @@ pub fn bot_register() -> Option<(UdpSocket, SocketAddr)>  {
     let (proto, bytes) = pb::unpack_msg(&mut buf, size);
     println!("收到svr回包, proto = {}", proto);
     if proto != 10004 {
-        println!("fatal: login recv must be 10004 !!!");
+        println!("fatal: register recv must be 10004 !!!");
         return None;
     }
     let msg = pb::login::CsRspRegister::decode(bytes.as_slice()).unwrap();
