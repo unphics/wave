@@ -5,8 +5,8 @@ fn main() {
             &[
                 "proto/role.proto",
                 "proto/hello.proto",
-                "proto/login.proto"
+                "proto/login.proto",
             ]
             , &["."]) // 要处理的proto文件
-        .unwrap();
+        .expect("编译proto失败");
 }

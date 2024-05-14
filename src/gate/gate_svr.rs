@@ -69,5 +69,5 @@ impl gate_svr{
         proxy.set_gate(self);
         self.proxys.lock().unwrap().insert(proxy.account(), p_proxy);
     }
-
+    
 }

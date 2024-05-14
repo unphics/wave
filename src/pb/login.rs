@@ -50,16 +50,53 @@ pub struct CsRspVersionCheck {
     #[prost(int32, tag="1")]
     pub error_code: i32,
 }
+/// 客户端请求拥有角色选角简介列表
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CsReqOwnerRoleSelectIntroList {
+    #[prost(int32, tag="1")]
+    pub account: i32,
+}
+/// 服务端回复拥有角色选角简介列表
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CsRspOwnerRoleSelectIntroList {
+    #[prost(message, repeated, tag="1")]
+    pub intro_list: ::prost::alloc::vec::Vec<super::role::RoleSelectIntro>,
+}
+/// 客户端请求创建角色
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CsReqCreateRole {
+    #[prost(message, optional, tag="1")]
+    pub info: ::core::option::Option<super::role::RoleCreateInfo>,
+}
+/// 服务端回复创建角色
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CsRspCreateRole {
+    #[prost(int32, tag="1")]
+    pub error_code: i32,
+}
+/// 客户端请求选择角色
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CsReqSelectRole {
+    #[prost(int32, tag="1")]
+    pub role_id: i32,
+}
+/// 服务端回复选择角色
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CsRspSelectRole {
+    #[prost(int32, tag="1")]
+    pub error_code: i32,
+}
 /// 网关服务器协议
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LoginMsg {
-    #[prost(oneof="login_msg::Data", tags="10001, 10002, 10003, 10004, 10005, 10006")]
+    #[prost(oneof="login_msg::Data", tags="10001, 10002, 10003, 10004, 10005, 10006, 10101, 10102, 10103, 10104, 10105, 10106")]
     pub data: ::core::option::Option<login_msg::Data>,
 }
 /// Nested message and enum types in `LoginMsg`.
 pub mod login_msg {
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Data {
+        /// Anonym
         #[prost(message, tag="10001")]
         CsReqLogin(super::CsReqLogin),
         #[prost(message, tag="10002")]
@@ -72,5 +109,18 @@ pub mod login_msg {
         CsReqVersionCheck(super::CsReqVersionCheck),
         #[prost(message, tag="10006")]
         CsRspVersionCheck(super::CsRspVersionCheck),
+        /// SelectRole
+        #[prost(message, tag="10101")]
+        CsReqOwnerRoleSelectIntroList(super::CsReqOwnerRoleSelectIntroList),
+        #[prost(message, tag="10102")]
+        CsRspOwnerRoleSelectIntroList(super::CsRspOwnerRoleSelectIntroList),
+        #[prost(message, tag="10103")]
+        CsReqCreateRole(super::CsReqCreateRole),
+        #[prost(message, tag="10104")]
+        CsRspCreateRole(super::CsRspCreateRole),
+        #[prost(message, tag="10105")]
+        CsReqSelectRole(super::CsReqSelectRole),
+        #[prost(message, tag="10106")]
+        CsRspSelectRole(super::CsRspSelectRole),
     }
 }

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package login;
 
-import "role.proto";
+import "proto/role.proto";
 
 // 客户端请求登录
 message CSReqLogin {
@@ -41,12 +41,12 @@ message CSReqOwnerRoleSelectIntroList {
 }
 // 服务端回复拥有角色选角简介列表
 message CSRspOwnerRoleSelectIntroList {
-    repeated RoleSelectIntro IntroList = 1;
+    repeated role.RoleSelectIntro IntroList = 1;
 }
 
 // 客户端请求创建角色
 message CSReqCreateRole {
-    RoleCreateInfo Info = 1;
+    role.RoleCreateInfo Info = 1;
 }
 // 服务端回复创建角色
 message CSRspCreateRole {
