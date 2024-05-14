@@ -7,6 +7,7 @@
  */
 use std::sync::Arc;
 use std::{thread, time};
+use alloc::{free, malloc};
 use center::center_svr::center_svr;
 use std::alloc::{alloc, dealloc, Layout};
 
@@ -19,6 +20,7 @@ mod bot;
 mod sqlite3;
 mod login;
 mod proxy;
+mod alloc;
 fn main() {
     println!("====== wave begin ======");
     // pb::example();
@@ -37,27 +39,18 @@ fn wave_svr_run() {
     //         thread::sleep(sleep_duration);
     //     }
     // });
-
     // 跑一下机器人
     // bot::run_bot(bot::login_bot::bot_login, 1);
-    
     // handle.join().expect("");
 
-    let layout_center = Layout::new::<center_svr>();
-    let mut p_center: *mut center_svr = std::ptr::null_mut();
-    unsafe {
-        p_center = alloc(layout_center) as *mut center_svr;
-        p_center.write(center_svr::new("center".to_string()));
-        let c = &*p_center;
-        let a = c.stop;
-    }
-    let p_move_center = p_center.clone() as usize;
+    let p_center = malloc(center_svr::new("center".to_string()));
+    println!("&center = {:p}", p_center);
+    let move_center = p_center.clone() as usize; // usize的尺寸和ptr相同, 此处不可用u8
     let handle = thread::spawn(move || {
-        let center = unsafe {&*(p_move_center as *mut center_svr)};
-        center.run_center();
+        alloc::deref(move_center as *mut center_svr).run_center();
     });
+    bot::run_bot(bot::login_bot::bot_login, 1);
+    // alloc::deref(p_center).notify();
     handle.join().expect("center.join");
-    unsafe{
-        dealloc(p_center as *mut u8, layout_center);
-    }
+    free(p_center);
 }
