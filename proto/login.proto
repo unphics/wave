@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package login;
 
+import "role.proto";
+
 // 客户端请求登录
 message CSReqLogin {
     int32 Account       = 1; // 账号
@@ -33,14 +35,49 @@ message CSRspVersionCheck {
     int32 ErrorCode = 1;
 }
 
+// 客户端请求拥有角色选角简介列表
+message CSReqOwnerRoleSelectIntroList {
+    int32 Account = 1;
+}
+// 服务端回复拥有角色选角简介列表
+message CSRspOwnerRoleSelectIntroList {
+    repeated RoleSelectIntro IntroList = 1;
+}
+
+// 客户端请求创建角色
+message CSReqCreateRole {
+    RoleCreateInfo Info = 1;
+}
+// 服务端回复创建角色
+message CSRspCreateRole {
+    int32 ErrorCode = 1;
+}
+
+// 客户端请求选择角色
+message CSReqSelectRole {
+    int32 RoleId = 1;
+}
+// 服务端回复选择角色
+message CSRspSelectRole {
+    int32 ErrorCode = 1;
+}
+
 // 网关服务器协议
 message LoginMsg {
     oneof Data {
+        // Anonym
         CSReqLogin CSReqLogin               = 10001;
         CSRspLogin CSRspLogin               = 10002;
         CSReqRegister CSReqRegister         = 10003;
         CSRspRegister CSRspRegister         = 10004;
         CSReqVersionCheck CSReqVersionCheck = 10005;
         CSRspVersionCheck CSRspVersionCheck = 10006;
+        // SelectRole
+        CSReqOwnerRoleSelectIntroList CSReqOwnerRoleSelectIntroList = 10101;
+        CSRspOwnerRoleSelectIntroList CSRspOwnerRoleSelectIntroList = 10102;
+        CSReqCreateRole CSReqCreateRole = 10103;
+        CSRspCreateRole CSRspCreateRole = 10104;
+        CSReqSelectRole CSReqSelectRole = 10105;
+        CSRspSelectRole CSRspSelectRole = 10106;
     }
 }

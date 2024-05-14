@@ -1,17 +1,15 @@
-use std::borrow::BorrowMut;
+
 use std::collections::HashMap;
-use std::ops::Deref;
-use std::sync::Arc;
 use std::sync::Condvar;
-use std::sync::Weak;
 use std::sync::Mutex;
 use std::collections::VecDeque;
+use crate::alloc;
 use crate::center::center_svr::center_svr;
 use crate::pb;
+use crate::proxy::proxy::proxy;
 use crate::sqlite3;
 use std::net::UdpSocket;
 use prost::Message;
-use crate::proxy;
 use crate::login::anonym_task::anonym_task;
 /**
  * @file login_svr.rs
@@ -25,7 +23,7 @@ use crate::login::anonym_task::anonym_task;
 pub struct login_svr {
     name: String,
     pub center_svr: *mut center_svr,
-    proxys: HashMap<i32, Arc<proxy::proxy::proxy>>,
+    proxys: HashMap<i32, *mut proxy>,
     mutex: Mutex<u8>,
     cond: Condvar,
     stop: bool,
@@ -47,7 +45,7 @@ impl login_svr {
     pub fn run_login(&mut self) {
         while !self.stop {
             let lock = self.mutex.lock().unwrap();
-            self.cond.wait_while(lock, |pending| {
+            self.cond.wait_while(lock, |_| {
                 if self.anonym_queue.lock().unwrap().len() > 0 {
                     return false;
                 }
@@ -60,22 +58,22 @@ impl login_svr {
     pub fn work(&mut self) {
         self.deal_with_anonym();
     }
-    // 匿名消息, 没有登录成功的客户端发送的都算匿名消息, 成功登录后才会走proxy, 匿名消息的处理先放到这里, 后面出一个struct或者trait
     pub fn send_anonym(&mut self, sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         let task = anonym_task::new(sock, addr, proto, pb_bytes);
         self.anonym_queue.lock().unwrap().push_back(task);
         self.cond.notify_one();
     }
-    fn create_proxy(this: Arc<Mutex<login_svr>>, addr: std::net::SocketAddr, account: i32) {
-        let mut proxy = Arc::new(proxy::proxy::proxy::new(addr, account));
-        let weak = Arc::downgrade(&this);
-        let arc = weak.upgrade().unwrap();
-        // proxy.set_login(weak.clone()); // todo last
-        this.lock().unwrap().proxys.insert(proxy.account(), Arc::clone(&proxy));
-        println!("client has been login succeed, and the proxy has been insert !");
-        
-        // let gate = arc.lock().unwrap().center_svr.as_ref().unwrap().upgrade().unwrap().lock().unwrap().get_gate();
-        // gate.unwrap().upgrade().unwrap().lock().unwrap().on_login(proxy);
+    /**
+     * @brief 创建客户端代理(当登录成功后), 保持此代理, 并将代理同步注册到网关服务器
+     */
+    fn create_proxy(&mut self, addr: std::net::SocketAddr, account: i32) {
+        let p_proxy = alloc::malloc(proxy::new(addr, account));
+        self.proxys.insert(account, p_proxy);
+        let proxy = alloc::deref(p_proxy);
+        proxy.set_login(self);
+
+        let center = alloc::deref(self.center_svr);
+        alloc::deref(center.get_gate()).on_login(p_proxy);
     }
     pub fn deal_with_anonym(&mut self) {
         if !(self.anonym_queue.lock().unwrap().len() > 0) {
@@ -91,8 +89,7 @@ impl login_svr {
                     println!("账号存在, 登录成功");
                     // todo 忘记验证密码了, 而且也没验证已登录
                     pb::send_proto(anonym.sock, anonym.addr.clone(), 10002, pb::login::CsRspLogin{result: true,error_code: 10001});
-                    // 登录成功后续流程 todo
-                    // login_svr::create_proxy(this, anonym.addr, msg.account);
+                    self.create_proxy(anonym.addr, msg.account);
                 } else {
                     println!("账号不存在, 需要注册");
                     pb::send_proto(anonym.sock, anonym.addr, 10002, pb::login::CsRspLogin{result: false,error_code: 10002});

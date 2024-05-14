@@ -1,5 +1,4 @@
-use std::{io::stderr, os::linux::raw::stat};
-use sqlite::{Row, State};
+use sqlite::State;
 /**
  * @file data.rs
  * @brief sqlite的data_db的操作模块

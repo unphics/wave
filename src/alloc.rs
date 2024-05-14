@@ -1,5 +1,5 @@
 use std::alloc::{alloc, dealloc, Layout};
-pub trait class {}
+
 pub fn malloc<T>(obj: T) -> *mut T where T: Sized, {
     let layout = Layout::new::<T>();
     let mut p_deap: *mut T = std::ptr::null_mut();

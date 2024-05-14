@@ -1,4 +1,4 @@
-use std::alloc::Layout;
+
 /**
  * @file center_svr.rs
  * @brief 中心服务器
@@ -7,22 +7,13 @@ use std::alloc::Layout;
  * @version 0.2
  */
 use std::net::UdpSocket;
-use std::option;
-use std::rc::Rc;
-use std::sync::Weak;
-use std::sync::Arc;
 use std::sync::Condvar;
 use std::sync::Mutex;
 use std::thread;
-use std::thread::sleep;
-use std::time;
-use tokio::runtime::Handle;
 
 use crate::alloc;
 use crate::alloc::malloc;
-use crate::gate;
 use crate::gate::gate_svr::gate_svr;
-use crate::login;
 use crate::login::login_svr::login_svr;
 pub struct center_svr {
     name: String,
@@ -51,16 +42,11 @@ impl center_svr {
         self.run_login();
         while !self.stop {
             let mut lock = self.mutex.lock().expect("failed to lock");
-            self.cond.wait_while(lock, |pending| {
+            self.cond.wait_while(lock, |_| {
                 return true; // 这玩意居然是true代表'不过', 真特么逆天
             }).unwrap();
             println!("center: run");
         }
-    }
-    pub fn notify(&mut self) {
-        // let sleep_duration = time::Duration::from_secs(1);
-        // thread::sleep(sleep_duration);
-        self.cond.notify_one();
     }
     pub fn shutdown(&mut self) {
         if self.stop == true {
@@ -74,7 +60,7 @@ impl center_svr {
         self.gate_svr = p_gate.clone();
         alloc::deref(p_gate).center_svr = self;
         let move_gate = p_gate.clone() as usize;
-        let handle = thread::spawn(move || {
+        let _ = thread::spawn(move || {
             alloc::deref(move_gate as *mut gate_svr).begin_listen();
         });
     }
@@ -83,19 +69,14 @@ impl center_svr {
         self.login_svr = p_login.clone();
         alloc::deref(p_login).center_svr = self;
         let move_login = p_login.clone() as usize;
-        let handle = thread::spawn(move || {
+        let _ = thread::spawn(move || {
             alloc::deref(move_login as *mut login_svr).run_login();
         });
     }
     pub fn route_login(&self) -> *mut login_svr {
-        return self.login_svr.clone();
+        return self.login_svr;
     }
-    // pub fn get_gate(&self) -> Option<Weak<Mutex<gate_svr>>> {
-        // if let Some(gate) = &self.gate_svr {
-        //     if let weak = Arc::downgrade(&gate) {
-        //         return Some(weak);
-        //     }
-        // }
-        // return None;
-    // }
+    pub fn get_gate(&self) -> *mut gate_svr {
+        return self.gate_svr;
+    }
 }

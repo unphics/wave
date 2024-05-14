@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package role;
+
+// 选角简介
+message RoleSelectIntro {
+    int32 RoleId = 1;
+}
+
+// 创建角色信息
+message RoleCreateInfo {
+    string Name = 1;
+}

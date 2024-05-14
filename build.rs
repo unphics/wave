@@ -3,6 +3,7 @@ fn main() {
         .out_dir("src/pb") // proto输出目录
         .compile_protos(
             &[
+                "proto/role.proto",
                 "proto/hello.proto",
                 "proto/login.proto"
             ]

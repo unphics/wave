@@ -1,8 +1,5 @@
-use prost::Message;
-use sqlite::State;
 
 use crate::alloc;
-use crate::center;
 use crate::center::center_svr::center_svr;
 /**
  * @file gate_svr.rs
@@ -13,25 +10,18 @@ use crate::center::center_svr::center_svr;
  * @descript 处理客户端连接, 分发客户端消息, 管理客户端代理
  */
 use crate::cfg;
-use crate::login::login_svr::login_svr;
-use crate::pb::login::CsReqLogin;
 use crate::proxy::proxy::proxy;
 use std::collections::HashMap;
 use std::net::UdpSocket;
-use std::net::ToSocketAddrs;
-use std::os::unix::net::SocketAddr;
-use std::sync::Weak;
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use crate::pb;
-use crate::sqlite3;
 
 
 pub struct gate_svr{
     name: String,
     sock: Option<UdpSocket>,
     pub center_svr: *mut center_svr,
-    proxys: HashMap<i32, Arc<proxy>>,
+    proxys: Mutex<HashMap<i32, *mut proxy>>,
 }
 
 impl gate_svr{
@@ -40,7 +30,7 @@ impl gate_svr{
             name: name,
             sock: None,
             center_svr: std::ptr::null_mut(),
-            proxys: HashMap::new(),
+            proxys: Mutex::new(HashMap::new()),
         }
     }
     pub fn begin_listen(&mut self) {
@@ -65,15 +55,19 @@ impl gate_svr{
             }
         }
     }
-    // 处理匿名账户消息
+    /**
+     * @brief 处理匿名账户消息
+     * @description 匿名消息, 没有登录成功的客户端发送的都算匿名消息, 成功登录后才会走proxy
+     */
     fn anomym_to_login(&self, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         let center = alloc::deref(self.center_svr);
         let login = alloc::deref(center.route_login());
         login.send_anonym(self.sock.as_ref().unwrap().try_clone().unwrap(), addr, proto, pb_bytes);
     }
-    // 该账户在login_svr成功登录
-    pub fn on_login(&mut self, proxy: Arc<proxy>) {
-        self.proxys.insert(proxy.account(), proxy);
+    pub fn on_login(&mut self, p_proxy: *mut proxy) {
+        let proxy = alloc::deref(p_proxy);
+        proxy.set_gate(self);
+        self.proxys.lock().unwrap().insert(proxy.account(), p_proxy);
     }
 
 }

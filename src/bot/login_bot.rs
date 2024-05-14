@@ -2,9 +2,7 @@ use prost::Message;
 use crate::cfg;
 use std::net::SocketAddr;
 use std::net::UdpSocket;
-use std::net::ToSocketAddrs;
 use crate::pb;
-use std::net::{IpAddr, Ipv4Addr};
 /**
  * @brief 测试登录
  */
@@ -49,6 +47,7 @@ pub fn bot_register() -> Option<(UdpSocket, SocketAddr)>  {
 }
 pub fn bot_select_role() -> Option<(UdpSocket, SocketAddr)>  {
     let (sock,saddr) = bot_login().unwrap();
-
-    return None;
+    println!("bot_select_role: begin");
+    
+    return Some((sock, saddr));
 }

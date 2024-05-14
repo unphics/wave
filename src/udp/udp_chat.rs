@@ -51,8 +51,8 @@ fn create<A: ToSocketAddrs>(src: A, tar: String, name: String) {
     let handle_rep = thread::spawn(move || {
         replys(rep_tk, n2, tar)
     });
-    handle_lis.join();
-    handle_rep.join();
+    handle_lis.join().unwrap();
+    handle_rep.join().unwrap();
 }
 
 fn listen(sock: UdpSocket, name: String) {
