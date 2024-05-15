@@ -67,7 +67,7 @@ pub fn bot_select_role() -> Option<(UdpSocket, SocketAddr)>  {
     let role_count = msg.intro_list.len();
     println!("result");
     if !(role_count > 0) {
-
+        // 创建角色
     }
 
     return Some((sock, saddr));
