@@ -58,8 +58,8 @@ impl login_svr {
     pub fn work(&mut self) {
         self.deal_with_anonym();
     }
-    pub fn send_anonym(&mut self, sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
-        let task = anonym_task::new(sock, addr, proto, pb_bytes);
+    pub fn send_anonym(&mut self, sock: UdpSocket, caddr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+        let task = anonym_task::new(sock, caddr, proto, pb_bytes);
         self.anonym_queue.lock().unwrap().push_back(task);
         self.cond.notify_one();
     }
@@ -88,11 +88,11 @@ impl login_svr {
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号存在, 登录成功");
                     // todo 忘记验证密码了, 而且也没验证已登录
-                    pb::send_proto(anonym.sock, anonym.addr.clone(), 10002, pb::login::CsRspLogin{result: true,error_code: 10001});
-                    self.create_proxy(anonym.addr, msg.account);
+                    pb::send_proto(anonym.sock, anonym.caddr, 10002, msg.account, pb::login::CsRspLogin{result: true,error_code: 10001});
+                    self.create_proxy(anonym.caddr, msg.account);
                 } else {
                     println!("账号不存在, 需要注册");
-                    pb::send_proto(anonym.sock, anonym.addr, 10002, pb::login::CsRspLogin{result: false,error_code: 10002});
+                    pb::send_proto(anonym.sock, anonym.caddr, 10002, msg.account, pb::login::CsRspLogin{result: false,error_code: 10002});
                 }
             }
             10003 => {
@@ -100,7 +100,7 @@ impl login_svr {
                 println!("client request register: {:?}", msg);
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号已存在, 不需要注册");
-                    pb::send_proto(anonym.sock, anonym.addr, 10004, pb::login::CsRspLogin{result: false,error_code: 10103});
+                    pb::send_proto(anonym.sock, anonym.caddr, 10004, msg.account, pb::login::CsRspLogin{result: false,error_code: 10103});
                 } else {
                     println!("账号不存在, 可以注册");
                     if sqlite3::data::insert_row("users", "account, password", "?, ?", |statement: &mut sqlite::Statement| {
@@ -108,10 +108,10 @@ impl login_svr {
                         statement.bind((2, msg.passwword.as_str())).expect("state.bind");
                     }) {
                         println!("注册成功");
-                        pb::send_proto(anonym.sock, anonym.addr, 10004, pb::login::CsRspLogin{result: true,error_code: 10101});
+                        pb::send_proto(anonym.sock, anonym.caddr, 10004, msg.account, pb::login::CsRspLogin{result: true,error_code: 10101});
                     } else {
                         println!("注册失败");
-                        pb::send_proto(anonym.sock, anonym.addr, 10004, pb::login::CsRspLogin{result: false,error_code: 10102});
+                        pb::send_proto(anonym.sock, anonym.caddr, 10004, msg.account, pb::login::CsRspLogin{result: false,error_code: 10102});
                     }
                 }
             }

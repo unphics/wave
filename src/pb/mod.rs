@@ -35,39 +35,42 @@ pub fn example() {
 /**
  * @brief 发送消息
  */
-pub fn send_proto<T>(sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, obj_pb: T) where T: Message {
-    sock.send_to(&serialize(proto, obj_pb), addr).unwrap();
+pub fn send_proto<T>(sock: UdpSocket, addr: std::net::SocketAddr, proto: u16, account: i32, obj_pb: T) where T: Message {
+    sock.send_to(&serialize(proto, account, obj_pb), addr).unwrap();
 }
 /**
  * @brief 序列化包
  */
-pub fn serialize<T>(proto: u16, obj_pb: T) -> Vec<u8> where T: Message {
+pub fn serialize<T>(proto: u16, account: i32, obj_pb: T) -> Vec<u8> where T: Message {
     let mut pb_bytes = Vec::new();
     obj_pb.encode(&mut pb_bytes).expect("failed to encode");
     let len = pb_bytes.len();
 
     let mut send_bytes = Vec::new();
-    send_bytes.extend_from_slice(&len.to_be_bytes());
-    send_bytes.extend_from_slice(&proto.to_be_bytes());
-    send_bytes.extend_from_slice(&pb_bytes);
+    send_bytes.extend_from_slice(&len.to_be_bytes()); // 包头第一段 uize : 内容段的长度
+    send_bytes.extend_from_slice(&proto.to_be_bytes()); // 包头第二段 u16 : 协议类型
+    send_bytes.extend_from_slice(&account.to_be_bytes()); // 包头第三段 i32 : 账号(或也可用于其他用途)
+    send_bytes.extend_from_slice(&pb_bytes); // 协议内容
     return send_bytes;
 }
 /**
  * @brief 解开网络包得到proto段和内容段
  */
-pub fn unpack_msg(buf: &mut [u8; 1024], size: usize) ->(u16, Vec<u8>) {
+const LEN_USIZE: usize = std::mem::size_of::<usize>();
+const LEN_U16: usize = std::mem::size_of::<u16>();
+const LEN_I32: usize = std::mem::size_of::<i32>();
+pub fn unpack_msg(buf: &mut [u8; 1024], size: usize) ->(u16, i32, Vec<u8>) {
     let buf = &mut buf[.. size];
     // 协议包前usize是[内容大小段]
-    const LEN_SIZE: usize = std::mem::size_of::<usize>();
-    let mut len_bytes = [0; LEN_SIZE];
-    len_bytes.copy_from_slice(&buf[..LEN_SIZE]);
-    let len = usize::from_be_bytes(len_bytes);
+    let len = usize::from_be_bytes(buf[0 .. LEN_USIZE].try_into().unwrap());
     // 然后前u16是[协议类型段]
-    let proto = u16::from_be_bytes([buf[LEN_SIZE], buf[LEN_SIZE + 1]]);
-    println!("recv desc: len = {}, proto = {}", len, proto);
+    let proto = u16::from_be_bytes(buf[LEN_USIZE .. LEN_USIZE + LEN_U16].try_into().unwrap());
+    // 然后前i32是[账号段]
+    let account: i32 = i32::from_be_bytes(buf[LEN_USIZE + LEN_U16 .. LEN_USIZE + LEN_U16 + LEN_I32].try_into().unwrap());
+    println!("recv desc: len = {}, proto = {}, account = {}", len, proto, account);
     // 最后是[协议内容段]
     let mut pb_bytes = Vec::new();
-    pb_bytes.extend_from_slice(&buf[LEN_SIZE + 2 .. size]);
-    return (proto, pb_bytes);
+    pb_bytes.extend_from_slice(&buf[LEN_USIZE + LEN_U16 + LEN_I32 .. size]);
+    return (proto, account, pb_bytes);
 }
 

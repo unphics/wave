@@ -2,12 +2,13 @@ syntax = "proto3";
 
 package role;
 
-// 选角简介
+// 选角简介, 待后续扩展
 message RoleSelectIntro {
-    int32 RoleId = 1;
+    int32 RoleId    = 1;
+    string Name     = 2;
 }
 
-// 创建角色信息
+// 创建角色信息, 待后续扩展
 message RoleCreateInfo {
     string Name = 1;
 }

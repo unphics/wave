@@ -35,34 +35,37 @@ impl gate_svr{
     }
     pub fn begin_listen(&mut self) {
         self.sock = Some(UdpSocket::bind(String::from(cfg::SERVER_ADDR)).expect("failed to bind addr"));
-        if let Some(sock) = &self.sock {
-            loop {
-                let mut buf: [u8; 1024] = [0u8; cfg::LISTEN_BUF_SIZE];
-                println!("gate: recv-ing...");
-                let (size, addr) = sock.recv_from(&mut buf).expect("failed to recv");
-                // 协议解包
-                let (proto, pb_bytes) = pb::unpack_msg(&mut buf, size);
-                self.deal_msg(addr, proto, pb_bytes);
-            }
+        loop {
+            let mut buf: [u8; 1024] = [0u8; cfg::LISTEN_BUF_SIZE];
+            println!("gate: recv-ing...");
+            let (size, caddr) = self.sock.as_ref().unwrap().recv_from(&mut buf).expect("failed to recv");
+            // 协议解包
+            let (proto, account, pb_bytes) = pb::unpack_msg(&mut buf, size);
+            // todo 临时测试 去掉后续流程
+            self.deal_msg(caddr, proto, pb_bytes);
         }
     }
     // 判断消息流向
-    fn deal_msg(&self, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+    fn deal_msg(&mut self, caddr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         match proto {
-            10000..=10999 => self.anomym_to_login(addr, proto, pb_bytes),
+            10000..=10099 => self.anomym_to_login(caddr, proto, pb_bytes),
             _ => {
+                self.forward_proxy(caddr, proto, pb_bytes);
                 println!("undefined proto !!!");
             }
         }
+    }
+    fn forward_proxy(&mut self, caddr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+        
     }
     /**
      * @brief 处理匿名账户消息
      * @description 匿名消息, 没有登录成功的客户端发送的都算匿名消息, 成功登录后才会走proxy
      */
-    fn anomym_to_login(&self, addr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+    fn anomym_to_login(&self, caddr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         let center = alloc::deref(self.center_svr);
         let login = alloc::deref(center.route_login());
-        login.send_anonym(self.sock.as_ref().unwrap().try_clone().unwrap(), addr, proto, pb_bytes);
+        login.send_anonym(self.sock.as_ref().unwrap().try_clone().unwrap(), caddr, proto, pb_bytes);
     }
     pub fn on_login(&mut self, p_proxy: *mut proxy) {
         let proxy = alloc::deref(p_proxy);

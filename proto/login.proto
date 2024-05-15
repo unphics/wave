@@ -41,12 +41,14 @@ message CSReqOwnerRoleSelectIntroList {
 }
 // 服务端回复拥有角色选角简介列表
 message CSRspOwnerRoleSelectIntroList {
-    repeated role.RoleSelectIntro IntroList = 1;
+    int32 ErrorCode                         = 1;
+    repeated role.RoleSelectIntro IntroList = 2;
 }
 
 // 客户端请求创建角色
 message CSReqCreateRole {
-    role.RoleCreateInfo Info = 1;
+    int32 Account               = 1;
+    role.RoleCreateInfo Info    = 2;
 }
 // 服务端回复创建角色
 message CSRspCreateRole {
@@ -55,7 +57,8 @@ message CSRspCreateRole {
 
 // 客户端请求选择角色
 message CSReqSelectRole {
-    int32 RoleId = 1;
+    int32 Account   = 1;
+    int32 RoleId    = 2;
 }
 // 服务端回复选择角色
 message CSRspSelectRole {
