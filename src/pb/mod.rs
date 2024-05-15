@@ -3,6 +3,7 @@ use std::net::UdpSocket;
 use prost::Message;
 use crate::cfg;
 pub mod hello;
+pub mod role;
 pub mod login;
 
 /**
