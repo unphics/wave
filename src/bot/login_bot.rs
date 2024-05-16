@@ -50,7 +50,7 @@ pub fn bot_register() -> Option<(UdpSocket, SocketAddr)>  {
     println!("result = {}, err_code = {}, {}", msg.result, msg.error_code, if msg.result  {"注册成功"} else {"注册失败"});
     return Some((sock, saddr));
 }
-pub fn bot_select_role() -> Option<(UdpSocket, SocketAddr)>  {
+pub fn bot_role_list() -> Option<(UdpSocket, SocketAddr)>  {
     let (sock,saddr) = bot_login().unwrap();
     println!("bot_select_role: begin");
     // 先获取角色列表
@@ -65,10 +65,7 @@ pub fn bot_select_role() -> Option<(UdpSocket, SocketAddr)>  {
     }
     let msg = pb::login::CsRspOwnerRoleSelectIntroList::decode(bytes.as_slice()).unwrap();
     let role_count = msg.intro_list.len();
-    println!("result");
-    if !(role_count > 0) {
-        // 创建角色
-    }
+    println!("bot_role_list: result = {}", role_count);
 
     return Some((sock, saddr));
 }

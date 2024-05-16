@@ -42,21 +42,38 @@ impl gate_svr{
             // 协议解包
             let (proto, account, pb_bytes) = pb::unpack_msg(&mut buf, size);
             // todo 临时测试 去掉后续流程
-            self.deal_msg(caddr, proto, pb_bytes);
+            self.deal_msg(caddr, proto, account, pb_bytes);
         }
     }
     // 判断消息流向
-    fn deal_msg(&mut self, caddr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
+    fn deal_msg(&mut self, caddr: std::net::SocketAddr, proto: u16, account: i32, pb_bytes: Vec<u8>) {
         match proto {
             10000..=10099 => self.anomym_to_login(caddr, proto, pb_bytes),
             _ => {
-                self.forward_proxy(caddr, proto, pb_bytes);
+                self.forward_proxy(caddr, proto, account, pb_bytes);
                 println!("undefined proto !!!");
             }
         }
     }
-    fn forward_proxy(&mut self, caddr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
-        
+    fn forward_proxy(&mut self, caddr: std::net::SocketAddr, proto: u16, account: i32, pb_bytes: Vec<u8>) {
+        let guard = self.proxys.lock().unwrap(); // 将锁定的互斥锁绑定到一个变量
+        // 如果不这样的话: self.proxys.lock().unwrap()创建了一个临时值, 这个临时值在match语句结束时就会被释放从而导致在match语句中引用的值无效
+        // 为了避免这个问题, 需要将锁的结果绑定到一个变量上使其在整个match期间都是有效的
+
+        let option = guard.get(&account);
+        match option {
+            Some(p) => {
+                let proxy = alloc::deref(*p);
+                if proxy.check(&caddr) {
+                    proxy.deal_msg(proto, pb_bytes);
+                } else {
+                    // 谁特么冒名顶替别人发消息?
+                }
+            }
+            None => {
+                // 该账户未登陆
+            }
+        }
     }
     /**
      * @brief 处理匿名账户消息

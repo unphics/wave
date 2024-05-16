@@ -38,7 +38,7 @@ fn wave_svr_run() {
     let handle = thread::spawn(move || {
         alloc::deref(move_center as *mut center_svr).run_center();
     });
-    bot::run_bot(bot::login_bot::bot_select_role, 1);
+    bot::run_bot(bot::login_bot::bot_role_list, 1);
     handle.join().expect("center.join");
     free(p_center);
 }

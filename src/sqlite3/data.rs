@@ -35,7 +35,7 @@ pub fn exit_row(table_name: &str, main_key: i64) -> bool {
     }
 }
 pub fn insert_row<F>(table_name: &str, fmt_field_txt: &str, fmt_seat_txt: &str, f: F) -> bool where F: Fn(&mut sqlite::Statement){
-    let conn = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
+    let conn: sqlite::Connection = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
     let query = format!("insert into {} ({}) values ({})", table_name, fmt_field_txt, fmt_seat_txt);
     let mut statement = conn.prepare(query).expect("insert_row conn.prepare");
     f(&mut statement);

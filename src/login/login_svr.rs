@@ -11,6 +11,8 @@ use crate::sqlite3;
 use std::net::UdpSocket;
 use prost::Message;
 use crate::login::anonym_task::anonym_task;
+
+use super::role_task::role_task;
 /**
  * @file login_svr.rs
  * @brief 登录服务器
@@ -28,6 +30,7 @@ pub struct login_svr {
     cond: Condvar,
     stop: bool,
     anonym_queue: Mutex<VecDeque<anonym_task>>,
+    role_queue: Mutex<VecDeque<role_task>>
 }
 
 impl login_svr {
@@ -40,6 +43,7 @@ impl login_svr {
             cond: Condvar::new(),
             stop: false,
             anonym_queue: Mutex::new(VecDeque::new()),
+            role_queue: Mutex::new(VecDeque::new()),
         };
     }
     pub fn run_login(&mut self) {
@@ -47,6 +51,8 @@ impl login_svr {
             let lock = self.mutex.lock().unwrap();
             self.cond.wait_while(lock, |_| {
                 if self.anonym_queue.lock().unwrap().len() > 0 {
+                    return false;
+                } else if self.role_queue.lock().unwrap().len() > 0 {
                     return false;
                 }
                 return true;
@@ -56,11 +62,17 @@ impl login_svr {
         }
     }
     pub fn work(&mut self) {
+        self.deal_with_role();
         self.deal_with_anonym();
     }
     pub fn send_anonym(&mut self, sock: UdpSocket, caddr: std::net::SocketAddr, proto: u16, pb_bytes: Vec<u8>) {
         let task = anonym_task::new(sock, caddr, proto, pb_bytes);
         self.anonym_queue.lock().unwrap().push_back(task);
+        self.cond.notify_one();
+    }
+    pub fn send_role(&mut self, proxy: *mut proxy, proto: u16, pb_bytes: Vec<u8>) {
+        let task = role_task::new(proxy, proto, pb_bytes);
+        self.role_queue.lock().unwrap().push_back(task);
         self.cond.notify_one();
     }
     /**
@@ -74,6 +86,18 @@ impl login_svr {
 
         let center = alloc::deref(self.center_svr);
         alloc::deref(center.get_gate()).on_login(p_proxy);
+    }
+    pub fn deal_with_role(&mut self) {
+        if !(self.role_queue.lock().unwrap().len() > 0) {
+            return;
+        }
+        let role_task = self.role_queue.lock().unwrap().pop_front().unwrap();
+        match role_task.proto {
+            10101 => {
+                // todo last
+            }
+            _ => println!("undefined proto !!!")
+        }
     }
     pub fn deal_with_anonym(&mut self) {
         if !(self.anonym_queue.lock().unwrap().len() > 0) {

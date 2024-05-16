@@ -1,4 +1,4 @@
-use crate::{gate::gate_svr::gate_svr, login::login_svr::login_svr};
+use crate::{alloc, gate::gate_svr::gate_svr, login::login_svr::login_svr};
 /**
  * @file proxy
  * @brief 客户端代理
@@ -22,8 +22,19 @@ impl proxy {
             gate: std::ptr::null_mut(),
         };
     }
-    pub fn check(&self, addr: std::net::SocketAddr, account: i32) -> bool {
-        return self.addr == addr && self.account == account;
+    pub fn deal_msg(&mut self, proto: u16, pb_bytes: Vec<u8>) {
+        match proto {
+            10100..=10199 => {
+                let login = alloc::deref(self.login);
+                login.send_role(self, proto, pb_bytes);
+            }
+            _ => {
+                // 其他, 以后再说
+            }
+        }
+    }
+    pub fn check(&self, addr: &std::net::SocketAddr) -> bool {
+        return self.addr == *addr;
     }
     pub fn account(&self) -> i32 {
         return self.account;
