@@ -10,6 +10,7 @@ use crate::proxy::proxy::proxy;
 use crate::sqlite3;
 use std::net::UdpSocket;
 use prost::Message;
+use sqlite::State;
 use crate::login::anonym_task::anonym_task;
 
 use super::role_task::role_task;
@@ -92,9 +93,23 @@ impl login_svr {
             return;
         }
         let role_task = self.role_queue.lock().unwrap().pop_front().unwrap();
+        println!("role_task.proto {}", role_task.proto);
         match role_task.proto {
             10101 => {
-                // todo last
+                let conn = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
+                let query = format!("select role_0, role_1, role_2 from users where account = ?", );
+                let mut statement = conn.prepare(query).expect("conn.prepare");
+                let account = 11111;
+                statement.bind((1, account)).map_err(|e| e.to_string()).expect("");
+                match statement.next() {
+                    Ok(State::Row) => {
+                        let role1 = statement.read::<i64, _>(0).map_err(|e| e.to_string()).unwrap();
+                        let role2 = statement.read::<i64, _>(1).map_err(|e| e.to_string()).unwrap();
+                        let role3 = statement.read::<i64, _>(2).map_err(|e| e.to_string()).unwrap();
+                        println!("role1 = {}, role2 = {}, role3 = {}", role1, role2, role3);
+                    }
+                    _ => println!("no role list"),
+                }
             }
             _ => println!("undefined proto !!!")
         }
