@@ -51,7 +51,6 @@ impl gate_svr{
             10000..=10099 => self.anomym_to_login(caddr, proto, pb_bytes),
             _ => {
                 self.forward_proxy(caddr, proto, account, pb_bytes);
-                println!("undefined proto !!!");
             }
         }
     }

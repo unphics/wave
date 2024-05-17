@@ -12,6 +12,7 @@ use std::net::UdpSocket;
 use prost::Message;
 use sqlite::State;
 use crate::login::anonym_task::anonym_task;
+use crate::error::ResultExt;
 
 use super::role_task::role_task;
 /**
@@ -99,13 +100,20 @@ impl login_svr {
                 let conn = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
                 let query = format!("select role_0, role_1, role_2 from users where account = ?", );
                 let mut statement = conn.prepare(query).expect("conn.prepare");
-                let account = 11111;
-                statement.bind((1, account)).map_err(|e| e.to_string()).expect("");
+                let proxy = alloc::deref(role_task.proxy);
+                statement.bind((1, proxy.account() as i64)).map_err(|e| e.to_string()).expect("");
                 match statement.next() {
                     Ok(State::Row) => {
-                        let role1 = statement.read::<i64, _>(0).map_err(|e| e.to_string()).unwrap();
-                        let role2 = statement.read::<i64, _>(1).map_err(|e| e.to_string()).unwrap();
+                        let role1 = statement.read::<i64, _>(0).handle();
+                        let role2 = statement.read::<i64, _>(1).handle();
                         let role3 = statement.read::<i64, _>(2).map_err(|e| e.to_string()).unwrap();
+                        let obj_pb = pb::login::CsRspOwnerRoleSelectIntroList{error_code: 10101, intro_list:vec![
+                            pb::role::RoleSelectIntro{role_id: 1001, name: "ww".to_string()},
+                            pb::role::RoleSelectIntro{role_id: 1002, name: "ww".to_string()},
+                            pb::role::RoleSelectIntro{role_id: 1003, name: "ww".to_string()},
+                        ]};
+                        // todo last
+                        // pb::send_proto(sock,proxy addr, proto, account, obj_pb);
                         println!("role1 = {}, role2 = {}, role3 = {}", role1, role2, role3);
                     }
                     _ => println!("no role list"),

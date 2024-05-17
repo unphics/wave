@@ -9,6 +9,7 @@ use std::thread;
 use alloc::{free, malloc};
 use center::center_svr::center_svr;
 
+mod error;
 mod center;
 mod udp;
 mod pb;
