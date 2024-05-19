@@ -146,7 +146,7 @@ impl login_svr {
                 let msg = pb::login::CsReqSelectRole::decode(role_task.pb_bytes.as_slice()).handle();
                 let role_id = msg.role_id;
                 // todo 加上验证等等
-
+                // todo last: 选择角色在proxy中的创建role的逻辑
                 let obj_pb = pb::login::CsRspSelectRole{error_code: 1};
                 pb::send_proto(proxy.sock() ,proxy.addr(), 10106, proxy.account(), obj_pb);
             }
