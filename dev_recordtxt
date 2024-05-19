@@ -2,3 +2,6 @@
 
 安装一个sqlite3
 vscode sqlite插件 sqlite viewer
+
+todo list:
+    参数很多的函数封成struct算球, gate_svr就有很多一样的参数传来传去

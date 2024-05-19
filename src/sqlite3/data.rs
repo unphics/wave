@@ -1,4 +1,6 @@
 use sqlite::State;
+
+use crate::error::ResultExt;
 /**
  * @file data.rs
  * @brief sqlite的data_db的操作模块
@@ -48,4 +50,26 @@ pub fn insert_row<F>(table_name: &str, fmt_field_txt: &str, fmt_seat_txt: &str, 
             return true;
         }
     }
+}
+/**
+ * @brief 取表的行数
+ */
+pub fn get_row_count(table_name: &str) -> u32 {
+    let conn: sqlite::Connection = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
+    let query = format!("select count(*) from {}", table_name);
+    let mut statement = conn.prepare(query).handle();
+    let mut count = 0;
+    if let Ok(State::Row) = statement.next() {
+        count = statement.read::<i64, _>(0).handle();
+    }
+    return count as u32;
+}
+/**
+ * @brief 修改字段
+ */
+pub fn modify_field_val(table_name: &str, main_key_name: &str, main_key: u32, field_name: &str, value: &str) {
+    let conn: sqlite::Connection = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
+    let query = format!("update {} set {} = {} where {} = {}", table_name, field_name, value, main_key_name, main_key);
+    let mut statement = conn.prepare(query).handle();
+    statement.next().handle();
 }

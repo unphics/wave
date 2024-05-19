@@ -80,8 +80,8 @@ impl login_svr {
     /**
      * @brief 创建客户端代理(当登录成功后), 保持此代理, 并将代理同步注册到网关服务器
      */
-    fn create_proxy(&mut self, addr: std::net::SocketAddr, account: i32) {
-        let p_proxy = alloc::malloc(proxy::new(addr, account));
+    fn create_proxy(&mut self, sock: UdpSocket, addr: std::net::SocketAddr, account: i32) {
+        let p_proxy = alloc::malloc(proxy::new(addr, account, sock));
         self.proxys.insert(account, p_proxy);
         let proxy = alloc::deref(p_proxy);
         proxy.set_login(self);
@@ -95,6 +95,7 @@ impl login_svr {
         }
         let role_task = self.role_queue.lock().unwrap().pop_front().unwrap();
         println!("role_task.proto {}", role_task.proto);
+        // todo: 角色相关的还有好多好多情况没处理, 等以后有心情再写, 先把主要流程写了
         match role_task.proto {
             10101 => {
                 let conn = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
@@ -104,22 +105,52 @@ impl login_svr {
                 statement.bind((1, proxy.account() as i64)).map_err(|e| e.to_string()).expect("");
                 match statement.next() {
                     Ok(State::Row) => {
-                        let role1 = statement.read::<i64, _>(0).handle();
-                        let role2 = statement.read::<i64, _>(1).handle();
-                        let role3 = statement.read::<i64, _>(2).map_err(|e| e.to_string()).unwrap();
-                        let obj_pb = pb::login::CsRspOwnerRoleSelectIntroList{error_code: 10101, intro_list:vec![
-                            pb::role::RoleSelectIntro{role_id: 1001, name: "ww".to_string()},
-                            pb::role::RoleSelectIntro{role_id: 1002, name: "ww".to_string()},
-                            pb::role::RoleSelectIntro{role_id: 1003, name: "ww".to_string()},
-                        ]};
-                        // todo last
-                        // pb::send_proto(sock,proxy addr, proto, account, obj_pb);
-                        println!("role1 = {}, role2 = {}, role3 = {}", role1, role2, role3);
+                        let mut row_data = Vec::new();
+                        row_data.push(statement.read::<i64, _>(0).handle());
+                        row_data.push(statement.read::<i64, _>(1).handle());
+                        row_data.push(statement.read::<i64, _>(2).map_err(|e| e.to_string()).unwrap());
+                        println!("读表结果; role1 = {}, role2 = {}, role3 = {}", row_data[0], row_data[1], row_data[2]);
+                        let mut intro_list = Vec::new();
+                        for role_id in row_data {
+                            if role_id > 0 {
+                                intro_list.push(pb::role::RoleSelectIntro{role_id: role_id as i32, name: "ww".to_string()});
+                            }
+                        }
+                        let obj_pb = pb::login::CsRspOwnerRoleSelectIntroList{error_code: 10101, intro_list: intro_list};
+                        pb::send_proto(proxy.sock() ,proxy.addr(), 10102, proxy.account(), obj_pb);
                     }
                     _ => println!("no role list"),
                 }
             }
-            _ => println!("undefined proto !!!")
+            10103 => {
+                let msg = pb::login::CsReqCreateRole::decode(role_task.pb_bytes.as_slice()).handle();
+                let proxy = alloc::deref(role_task.proxy);
+                // todo: role_id的值得算出来
+                let role_id = sqlite3::data::get_row_count("role") + 1;
+                let info = msg.info.unwrap();
+                if sqlite3::data::insert_row("role", "role_id, name", "?, ?", |statement| {
+                    statement.bind((1, role_id as i64)).handle();
+                    statement.bind((2, info.name.as_str())).handle();
+                }) {
+                    sqlite3::data::modify_field_val("users", "account", proxy.account() as u32, "role_0", role_id.to_string().as_str());
+                    println!("login: 创建成功");
+                    // todo: 现在强制把创建的角色放到该账户的第一个位置, 后面根据role_list的加载策略更正
+                    let obj_pb = pb::login::CsRspCreateRole{error_code: 1, role_id: role_id as i32};
+                    pb::send_proto(proxy.sock() ,proxy.addr(), 10104, proxy.account(), obj_pb);
+                } else {
+                    println!("login: 创建失败");
+                }
+            }
+            10105 => {
+                let proxy = alloc::deref(role_task.proxy);
+                let msg = pb::login::CsReqSelectRole::decode(role_task.pb_bytes.as_slice()).handle();
+                let role_id = msg.role_id;
+                // todo 加上验证等等
+
+                let obj_pb = pb::login::CsRspSelectRole{error_code: 1};
+                pb::send_proto(proxy.sock() ,proxy.addr(), 10106, proxy.account(), obj_pb);
+            }
+            _ => println!("undefined proto: {} !!!", role_task.proto)
         }
     }
     pub fn deal_with_anonym(&mut self) {
@@ -135,8 +166,8 @@ impl login_svr {
                 if sqlite3::data::exit_row("users", msg.account as i64) {
                     println!("账号存在, 登录成功");
                     // todo 忘记验证密码了, 而且也没验证已登录
-                    pb::send_proto(anonym.sock, anonym.caddr, 10002, msg.account, pb::login::CsRspLogin{result: true,error_code: 10001});
-                    self.create_proxy(anonym.caddr, msg.account);
+                    pb::send_proto(anonym.sock.try_clone().handle(), anonym.caddr, 10002, msg.account, pb::login::CsRspLogin{result: true,error_code: 10001});
+                    self.create_proxy(anonym.sock, anonym.caddr, msg.account);
                 } else {
                     println!("账号不存在, 需要注册");
                     pb::send_proto(anonym.sock, anonym.caddr, 10002, msg.account, pb::login::CsRspLogin{result: false,error_code: 10002});

@@ -67,9 +67,7 @@ pub struct CsRspOwnerRoleSelectIntroList {
 /// 客户端请求创建角色
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CsReqCreateRole {
-    #[prost(int32, tag="1")]
-    pub account: i32,
-    #[prost(message, optional, tag="2")]
+    #[prost(message, optional, tag="1")]
     pub info: ::core::option::Option<super::role::RoleCreateInfo>,
 }
 /// 服务端回复创建角色
@@ -77,13 +75,13 @@ pub struct CsReqCreateRole {
 pub struct CsRspCreateRole {
     #[prost(int32, tag="1")]
     pub error_code: i32,
+    #[prost(int32, tag="2")]
+    pub role_id: i32,
 }
 /// 客户端请求选择角色
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CsReqSelectRole {
     #[prost(int32, tag="1")]
-    pub account: i32,
-    #[prost(int32, tag="2")]
     pub role_id: i32,
 }
 /// 服务端回复选择角色

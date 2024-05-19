@@ -47,18 +47,17 @@ message CSRspOwnerRoleSelectIntroList {
 
 // 客户端请求创建角色
 message CSReqCreateRole {
-    int32 Account               = 1;
-    role.RoleCreateInfo Info    = 2;
+    role.RoleCreateInfo Info    = 1;
 }
 // 服务端回复创建角色
 message CSRspCreateRole {
     int32 ErrorCode = 1;
+    int32 RoleId    = 2;
 }
 
 // 客户端请求选择角色
 message CSReqSelectRole {
-    int32 Account   = 1;
-    int32 RoleId    = 2;
+    int32 RoleId    = 1;
 }
 // 服务端回复选择角色
 message CSRspSelectRole {
