@@ -1,6 +1,6 @@
 use std::net::UdpSocket;
 
-use crate::{alloc, gate::gate_svr::gate_svr, login::login_svr::login_svr};
+use crate::{alloc, gate::gate_svr::gate_svr, login::login_svr::login_svr, role::role::role};
 /**
  * @file proxy
  * @brief 客户端代理
@@ -14,6 +14,7 @@ pub struct proxy {
     login: *mut login_svr,
     gate: *mut gate_svr,
     sock: UdpSocket,
+    role: *mut role,
 }
 
 impl proxy {
@@ -24,6 +25,7 @@ impl proxy {
             login: std::ptr::null_mut(),
             gate: std::ptr::null_mut(),
             sock: sock,
+            role: std::ptr::null_mut(),
         };
     }
     pub fn deal_msg(&mut self, proto: u16, pb_bytes: Vec<u8>) {
@@ -42,6 +44,11 @@ impl proxy {
     }
     pub fn sock(&self) -> UdpSocket {
         return self.sock.try_clone().unwrap();
+    }
+    pub fn select_role(&mut self, p_role: *mut role) {
+        self.role = p_role;
+        let role = alloc::deref(self.role);
+        role.on_create();
     }
     pub fn check(&self, addr: &std::net::SocketAddr) -> bool {
         return self.addr == *addr;

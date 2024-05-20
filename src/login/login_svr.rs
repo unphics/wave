@@ -7,6 +7,7 @@ use crate::alloc;
 use crate::center::center_svr::center_svr;
 use crate::pb;
 use crate::proxy::proxy::proxy;
+use crate::role::role::role;
 use crate::sqlite3;
 use std::net::UdpSocket;
 use prost::Message;
@@ -147,11 +148,17 @@ impl login_svr {
                 let role_id = msg.role_id;
                 // todo 加上验证等等
                 // todo last: 选择角色在proxy中的创建role的逻辑
+                self.create_role(proxy, role_id);
                 let obj_pb = pb::login::CsRspSelectRole{error_code: 1};
                 pb::send_proto(proxy.sock() ,proxy.addr(), 10106, proxy.account(), obj_pb);
             }
             _ => println!("undefined proto: {} !!!", role_task.proto)
         }
+    }
+    pub fn create_role(&mut self, proxy: &mut proxy, role_id: i32) {
+        let name: String = sqlite3::data::read_field_val("users", "account", role_id, "name");
+        let p_role = alloc::malloc(role::new(role_id, name));
+        proxy.select_role(p_role);
     }
     pub fn deal_with_anonym(&mut self) {
         if !(self.anonym_queue.lock().unwrap().len() > 0) {

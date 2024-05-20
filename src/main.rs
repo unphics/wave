@@ -20,6 +20,7 @@ mod sqlite3;
 mod login;
 mod proxy;
 mod alloc;
+mod role;
 fn main() {
     println!("====== wave begin ======");
     // pb::example();

@@ -65,7 +65,17 @@ pub fn get_row_count(table_name: &str) -> u32 {
     return count as u32;
 }
 /**
- * @brief 修改字段
+ * @brief 读取字段的值
+ */
+pub fn read_field_val<T: sqlite::ReadableWithIndex>(table_name: &str, main_key_name: &str, main_key: i32, field_name: &str) -> T {
+    let conn: sqlite::Connection = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
+    let query = format!("select {} from {} where {} = {}", field_name, table_name, main_key_name, main_key);
+    let mut statement = conn.prepare(query).handle();
+    // let result = statement.next().handle();
+    return statement.read(0).handle();
+}
+/**
+ * @brief 修改字段的值
  */
 pub fn modify_field_val(table_name: &str, main_key_name: &str, main_key: u32, field_name: &str, value: &str) {
     let conn: sqlite::Connection = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
