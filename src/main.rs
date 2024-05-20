@@ -21,6 +21,7 @@ mod login;
 mod proxy;
 mod alloc;
 mod role;
+mod scene;
 fn main() {
     println!("====== wave begin ======");
     // pb::example();

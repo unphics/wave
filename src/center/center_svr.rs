@@ -15,11 +15,14 @@ use crate::alloc;
 use crate::alloc::malloc;
 use crate::gate::gate_svr::gate_svr;
 use crate::login::login_svr::login_svr;
+use crate::scene;
+use crate::scene::scene_svr::scene_svr;
 pub struct center_svr {
     name: String,
     sock: Option<UdpSocket>,
     gate_svr: *mut gate_svr,
     login_svr: *mut login_svr,
+    scene_svr: *mut scene_svr,
     pub stop: bool,
     mutex: Mutex<u8>,
     cond: Condvar,
@@ -32,6 +35,7 @@ impl center_svr {
             sock: None,
             gate_svr: std::ptr::null_mut(),
             login_svr: std::ptr::null_mut(),
+            scene_svr: std::ptr::null_mut(),
             stop: false,
             mutex: Mutex::new(0),
             cond: Condvar::new(),
@@ -40,6 +44,7 @@ impl center_svr {
     pub fn run_center(&mut self) {
         self.run_gate();
         self.run_login();
+        self.run_scene();
         while !self.stop {
             let mut lock = self.mutex.lock().expect("failed to lock");
             self.cond.wait_while(lock, |_| {
@@ -59,7 +64,7 @@ impl center_svr {
         let p_gate = malloc(gate_svr::new("gate".to_string()));
         self.gate_svr = p_gate.clone();
         alloc::deref(p_gate).center_svr = self;
-        let move_gate = p_gate.clone() as usize;
+        let move_gate = p_gate as usize;
         let _ = thread::spawn(move || {
             alloc::deref(move_gate as *mut gate_svr).begin_listen();
         });
@@ -68,10 +73,22 @@ impl center_svr {
         let p_login = malloc(login_svr::new("login".to_string()));
         self.login_svr = p_login.clone();
         alloc::deref(p_login).center_svr = self;
-        let move_login = p_login.clone() as usize;
+        let move_login = p_login as usize;
         let _ = thread::spawn(move || {
             alloc::deref(move_login as *mut login_svr).run_login();
         });
+    }
+    pub fn run_scene(&mut self) {
+        let p_scene = malloc(scene_svr::new("scene".to_string()));
+        self.scene_svr = p_scene.clone();
+        alloc::deref(p_scene).center_svr = self;
+        let move_scene = p_scene as usize;
+        let _ = thread::spawn(move || {
+            alloc::deref(move_scene as *mut scene_svr).run_scene();
+        });
+    }
+    pub fn route_scene(&self) -> *mut scene_svr {
+        return self.scene_svr;
     }
     pub fn route_login(&self) -> *mut login_svr {
         return self.login_svr;

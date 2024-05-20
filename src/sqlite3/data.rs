@@ -1,4 +1,5 @@
-use sqlite::State;
+
+use sqlite::{ReadableWithIndex, State};
 
 use crate::error::ResultExt;
 /**
@@ -67,13 +68,19 @@ pub fn get_row_count(table_name: &str) -> u32 {
 /**
  * @brief 读取字段的值
  */
-pub fn read_field_val<T: sqlite::ReadableWithIndex>(table_name: &str, main_key_name: &str, main_key: i32, field_name: &str) -> T {
-    let conn: sqlite::Connection = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
+pub fn read_field_str(table_name: &str, main_key_name: &str, main_key: i32, field_name: &str) -> String {
+    let conn = sqlite::open("sqlite/wave_data.db").expect("sqlite::open");
     let query = format!("select {} from {} where {} = {}", field_name, table_name, main_key_name, main_key);
-    let mut statement = conn.prepare(query).handle();
-    // let result = statement.next().handle();
-    return statement.read(0).handle();
+    let mut statement = conn.prepare(query).expect("conn.prepare");
+    statement.next().unwrap();
+    return statement.read::<String, _>(0).handle();
 }
+// trait from_sql{}
+// impl from_sql for String {}
+// impl from_sql for i32 {}
+// impl from_sql for ReadableWithIndex {
+    
+// }
 /**
  * @brief 修改字段的值
  */

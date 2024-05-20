@@ -1,4 +1,7 @@
-
+[profile.dev]
+debug = true
+[profile.release]
+debug = true
 
 [package]
 name = "wave"

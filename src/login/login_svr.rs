@@ -106,11 +106,11 @@ impl login_svr {
                 statement.bind((1, proxy.account() as i64)).map_err(|e| e.to_string()).expect("");
                 match statement.next() {
                     Ok(State::Row) => {
-                        let mut row_data = Vec::new();
+                        let mut row_data: Vec<i64> = Vec::new();
                         row_data.push(statement.read::<i64, _>(0).handle());
                         row_data.push(statement.read::<i64, _>(1).handle());
-                        row_data.push(statement.read::<i64, _>(2).map_err(|e| e.to_string()).unwrap());
-                        println!("读表结果; role1 = {}, role2 = {}, role3 = {}", row_data[0], row_data[1], row_data[2]);
+                        row_data.push(statement.read::<i64, _>(2).handle());
+                        println!("read result: role1 = {}, role2 = {}, role3 = {}", row_data[0], row_data[1], row_data[2]);
                         let mut intro_list = Vec::new();
                         for role_id in row_data {
                             if role_id > 0 {
@@ -148,17 +148,21 @@ impl login_svr {
                 let role_id = msg.role_id;
                 // todo 加上验证等等
                 // todo last: 选择角色在proxy中的创建role的逻辑
-                self.create_role(proxy, role_id);
+                self.create_role_inst(proxy, role_id);
                 let obj_pb = pb::login::CsRspSelectRole{error_code: 1};
                 pb::send_proto(proxy.sock() ,proxy.addr(), 10106, proxy.account(), obj_pb);
             }
             _ => println!("undefined proto: {} !!!", role_task.proto)
         }
     }
-    pub fn create_role(&mut self, proxy: &mut proxy, role_id: i32) {
-        let name: String = sqlite3::data::read_field_val("users", "account", role_id, "name");
+    pub fn create_role_inst(&mut self, proxy: &mut proxy, role_id: i32) {
+        let name = sqlite3::data::read_field_str("role", "role_id", role_id, "name");
+        println!("create role inst : rid = {}, name = {}", role_id, name);
         let p_role = alloc::malloc(role::new(role_id, name));
         proxy.select_role(p_role);
+        let center = alloc::deref(self.center_svr);
+        let scene = alloc::deref(center.route_scene());
+        scene.send_new_proxy(proxy);
     }
     pub fn deal_with_anonym(&mut self) {
         if !(self.anonym_queue.lock().unwrap().len() > 0) {
