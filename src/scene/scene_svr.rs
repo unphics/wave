@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::alloc;
 use crate::proxy::proxy::proxy;
 use crate::center::center_svr::center_svr;
 use std::thread;
@@ -30,7 +31,7 @@ impl scene_svr {
     pub fn tick(&mut self) {
         // println!("tick");
     }
-    pub fn send_new_proxy(&mut self, proxy: *mut proxy) {
-        
+    pub fn send_new_proxy(&mut self, p_proxy: *mut proxy) {
+        let proxy = alloc::deref(p_proxy);
     }
 }
