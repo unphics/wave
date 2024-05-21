@@ -11,10 +11,10 @@ edition = "2021"
 
 [dependencies]
 tokio = {version = "1", features = ["full"]}
-prost = "0.7"
+prost = "0.7" # protobuf
 prost-types = {version = "0.7", optional = true}
 anyhow = "1"
-sqlite  = "=0.36.0"
+sqlite  = "=0.36.0" # sqlite
 
 [build-dependencies]
 prost-build = "0.7"
