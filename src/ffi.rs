@@ -5,7 +5,7 @@ extern crate libc;
 use std::os::raw::{c_char, c_float, c_int};
 
 // 定义C函数接口
-#[link(name = "RecastNavLib" , kind = "static")]
+// #[link(name = "RecastNavLib" , kind = "static")]
 extern "C" {
 
     pub fn recast_init() -> bool;
