@@ -1,10 +1,13 @@
 #![allow(non_camel_case_types)]
 
-use std::ffi::CStr;
+extern crate libc;
+
 use std::os::raw::{c_char, c_float, c_int};
 
 // 定义C函数接口
+#[link(name = "RecastNavLib" , kind = "static")]
 extern "C" {
+
     pub fn recast_init() -> bool;
     pub fn recast_fini();
     pub fn recast_loadmap(id: c_int, path: *const c_char) -> bool;
@@ -21,9 +24,9 @@ extern "C" {
 }
 
 // Rust封装函数（可选）
-pub fn load_map(id: i32, path: &str) -> bool {
-    let c_path = std::ffi::CString::new(path).expect("CString::new failed");
-    unsafe { recast_loadmap(id, c_path.as_ptr()) }
-}
+// pub fn load_map(id: i32, path: &str) -> bool {
+//     let c_path = std::ffi::CString::new(path).expect("CString::new failed");
+//     unsafe { recast_loadmap(id, c_path.as_ptr()) }
+// }
 
 // 更多的封装函数可以按照需求定义

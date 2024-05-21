@@ -9,6 +9,8 @@ use std::thread;
 use alloc::{free, malloc};
 use center::center_svr::center_svr;
 
+extern crate libc;
+
 mod error;
 mod center;
 mod udp;
@@ -22,11 +24,18 @@ mod proxy;
 mod alloc;
 mod role;
 mod scene;
+// mod recast;
+mod ffi;
 fn main() {
     println!("====== wave begin ======");
     // pb::example();
     // udp::udp_chat::udp_chat();
-    wave_svr_run();
+    // wave_svr_run();
+
+    unsafe {
+        let res = ffi::recast_init();
+        println!("result = {}", res);
+    };
 
     // const LEN_USIZE: usize = std::mem::size_of::<usize>();
     // const LEN_U16: usize = std::mem::size_of::<u16>();

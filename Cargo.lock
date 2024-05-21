@@ -524,6 +524,7 @@ name = "wave"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "libc",
  "prost",
  "prost-build",
  "prost-types",
