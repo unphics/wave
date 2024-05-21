@@ -3,11 +3,20 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
+    
+    // let lib_path = PathBuf::from(env::current_exe().unwrap()).join("");
+    // println!("cargo:rustc-link-search=native={}", lib_path.display());
+
+    // 链接C++标准库
+    println!("cargo:rustc-link-lib=dylib=stdc++");
+    println!("cargo:rustc-link-lib=dylib=c++abi");
     // 告诉Cargo静态库的位置
-    let lib_path = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("./libs/recast_nav/build/");
+    let lib_path = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("");
+    println!("cargo:warning=zys: {}",lib_path.display() );
     println!("cargo:rustc-link-search=native={}", lib_path.display());
     // 告诉Cargo链接静态库
-    println!("cargo:rustc-link-lib=static=RecastNavLib");
+    println!("cargo:rustc-link-lib=dylib=RecastNavLib");
+
 
     prost_build::Config::new()
         .out_dir("src/pb") // proto输出目录

@@ -16,9 +16,11 @@ prost-types = {version = "0.7", optional = true}
 anyhow = "1"
 sqlite  = "=0.36.0" # sqlite库
 libc="0.2"
+cc = "1.0" # recast_nav中用了stl
 
 [build-dependencies]
 prost-build = "0.7"
 
 [build]
+# rustflags = ["-L", "native=/path/to/your/dynamic/libs"]
 build = "build.rs"
