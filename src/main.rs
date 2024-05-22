@@ -25,11 +25,7 @@ mod alloc;
 mod role;
 mod scene;
 // mod recast;
-// mod ffi;
-
-// #![allow(non_snake_case)]
-#[link(name = "RecastNavLib")]
-extern "C" {fn recast_init() -> bool;}
+mod ffi;
 
 fn main() {
     println!("====== wave begin ======");
@@ -37,7 +33,9 @@ fn main() {
     // udp::udp_chat::udp_chat();
     // wave_svr_run();
 
-    println!("result = {}", unsafe{ recast_init()});
+    println!("result = {}", unsafe{ ffi::recast_init()});
+    unsafe{ ffi::recast_fini()};
+    
 
     // const LEN_USIZE: usize = std::mem::size_of::<usize>();
     // const LEN_U16: usize = std::mem::size_of::<u16>();
