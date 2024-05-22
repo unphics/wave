@@ -10,6 +10,10 @@ pub mod login;
  * pb 示例
  */
 pub fn example() {
+        // const LEN_USIZE: usize = std::mem::size_of::<usize>();
+        // const LEN_U16: usize = std::mem::size_of::<u16>();
+        // const LEN_I32: usize = std::mem::size_of::<i32>();
+        // println!("len_usize = {}, len_u16 = {}, len_i32 = {}, another = {}", LEN_USIZE, LEN_U16, LEN_I32, std::mem::size_of::<bool>());
     let req = hello::HelloRequest {
         name: "hello world".to_string(),
     };
