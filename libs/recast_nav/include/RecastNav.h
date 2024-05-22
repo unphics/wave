@@ -108,8 +108,6 @@ extern "C"
 	/// <param name="spos">坐标，float[3]</param>
     /// <returns>得到修复后的坐标点</returns>
     DllExport float* recast_getfixposition(int id, const float* pos);
-
-	DllExport int test_get_a_num();
 }
 
 #endif

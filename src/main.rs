@@ -24,18 +24,13 @@ mod proxy;
 mod alloc;
 mod role;
 mod scene;
-// mod recast;
-mod ffi;
+mod recast;
 
 fn main() {
     println!("====== wave begin ======");
     // pb::example();
     // udp::udp_chat::udp_chat();
-    // wave_svr_run();
-
-    println!("result = {}", unsafe{ ffi::recast_init()});
-    unsafe{ ffi::recast_fini()};
-    
+    wave_svr_run();
 
     // const LEN_USIZE: usize = std::mem::size_of::<usize>();
     // const LEN_U16: usize = std::mem::size_of::<u16>();

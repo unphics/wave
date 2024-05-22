@@ -22,5 +22,4 @@ cc = "1.0" # recast_nav中用了stl
 prost-build = "0.7"
 
 [build]
-# rustflags = ["-L", "native=/path/to/your/dynamic/libs"]
 build = "build.rs"

@@ -4,6 +4,7 @@ use std::ffi::CStr;
 use std::os::raw::{c_char, c_float, c_int};
 
 // 定义C函数接口
+#[link(name = "RecastNav")]
 extern "C" {
     pub fn recast_init() -> bool;
     pub fn recast_fini();

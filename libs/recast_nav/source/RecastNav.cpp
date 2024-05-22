@@ -101,9 +101,5 @@ extern "C"
         float* fixPos = _helper->Get(id)->fixPosition(pos);
         return fixPos;
 	}
-
-	int test_get_a_num() {
-		return 12345;
-	}
 }
 
