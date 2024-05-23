@@ -20,8 +20,7 @@ fn main() {
                 "proto/role.proto",
                 "proto/hello.proto",
                 "proto/login.proto",
-            ]
-            , &["."]) // 要处理的proto文件
+            ], &["."]) // 要处理的proto文件
         .expect("编译proto失败");
     
 }

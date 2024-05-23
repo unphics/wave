@@ -4,7 +4,7 @@ use crate::proxy::proxy::proxy;
 use crate::center::center_svr::center_svr;
 use std::thread;
 use std::time;
-
+use crate::recast;
 pub struct scene_svr {
     name: String,
     pub center_svr: *mut center_svr,
@@ -23,10 +23,14 @@ impl scene_svr {
     }
     pub fn run_scene(&mut self) {
         let sleep_duration = time::Duration::from_millis(30);
+        self.on_begin();
         while !self.stop {
             self.tick();
             thread::sleep(sleep_duration);
         }
+    }
+    pub fn on_begin(&mut self) {
+        
     }
     pub fn tick(&mut self) {
         // println!("tick");
