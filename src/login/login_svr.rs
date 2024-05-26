@@ -9,6 +9,7 @@ use crate::pb;
 use crate::proxy::proxy::proxy;
 use crate::role::role::role;
 use crate::sqlite3;
+use crate::svr::base;
 use std::net::UdpSocket;
 use prost::Message;
 use sqlite::State;
@@ -36,8 +37,8 @@ pub struct login_svr {
     role_queue: Mutex<VecDeque<role_task>>
 }
 
-impl login_svr {
-    pub fn new(name: String) -> login_svr {
+impl base for login_svr {
+    fn new(name: String) -> Self {
         return login_svr {
             name: name,
             center_svr: std::ptr::null_mut(),
@@ -49,7 +50,8 @@ impl login_svr {
             role_queue: Mutex::new(VecDeque::new()),
         };
     }
-    pub fn run_login(&mut self) {
+    fn begin(&mut self) {}
+    fn run(&mut self) {
         while !self.stop {
             let lock = self.mutex.lock().unwrap();
             self.cond.wait_while(lock, |_| {
@@ -64,6 +66,19 @@ impl login_svr {
             self.work();
         }
     }
+    fn end(&mut self) {}
+    fn shutdown(&mut self) {
+        if self.stop == true {
+            return;
+        }
+        self.stop = true;
+        self.cond.notify_all();
+    }
+    fn name(&self) -> String {
+        return self.name.clone();
+    }
+}
+impl login_svr {
     pub fn work(&mut self) {
         self.deal_with_role();
         self.deal_with_anonym();

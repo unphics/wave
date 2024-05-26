@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use crate::alloc;
 use crate::proxy::proxy::proxy;
 use crate::center::center_svr::center_svr;
+use crate::svr::base;
 use std::thread;
 use std::time;
 use crate::recast;
@@ -11,9 +12,8 @@ pub struct scene_svr {
     proxys: HashMap<i32, *mut proxy>,
     stop: bool,
 }
-
-impl scene_svr {
-    pub fn new(name: String) -> scene_svr {
+impl base for scene_svr {
+    fn new(name: String) -> Self {
         return scene_svr {
             name: name,
             center_svr: std::ptr::null_mut(),
@@ -21,17 +21,27 @@ impl scene_svr {
             stop: false,
         }
     }
-    pub fn run_scene(&mut self) {
+    fn begin(&mut self) {}
+    fn run(&mut self) {
         let sleep_duration = time::Duration::from_millis(30);
-        self.on_begin();
+        self.begin();
         while !self.stop {
             self.tick();
             thread::sleep(sleep_duration);
         }
     }
-    pub fn on_begin(&mut self) {
-        
+    fn end(&mut self) {}
+    fn shutdown(&mut self) {
+        if self.stop == true {
+            return;
+        }
+        self.stop = true;
     }
+    fn name(&self) -> String {
+        return self.name.clone();
+    }
+}
+impl scene_svr {
     pub fn tick(&mut self) {
         // println!("tick");
     }

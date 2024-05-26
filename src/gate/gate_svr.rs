@@ -13,9 +13,9 @@ use crate::cfg;
 use crate::proxy::proxy::proxy;
 use std::collections::HashMap;
 use std::net::UdpSocket;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use crate::pb;
-
+use crate::svr::base;
 
 pub struct gate_svr{
     name: String,
@@ -24,8 +24,8 @@ pub struct gate_svr{
     proxys: Mutex<HashMap<i32, *mut proxy>>,
 }
 
-impl gate_svr{
-    pub fn new(name: String) -> gate_svr {
+impl base for gate_svr {
+    fn new(name: String) -> gate_svr {
         gate_svr {
             name: name,
             sock: None,
@@ -33,7 +33,10 @@ impl gate_svr{
             proxys: Mutex::new(HashMap::new()),
         }
     }
-    pub fn begin_listen(&mut self) {
+    fn begin(&mut self) {
+        self.run();
+    }
+    fn run(&mut self) {
         self.sock = Some(UdpSocket::bind(String::from(cfg::SERVER_ADDR)).expect("failed to bind addr"));
         loop {
             let mut buf: [u8; 1024] = [0u8; cfg::LISTEN_BUF_SIZE];
@@ -45,6 +48,18 @@ impl gate_svr{
             self.deal_msg(caddr, proto, account, pb_bytes);
         }
     }
+    fn end(&mut self) {
+        // to do
+    }
+    fn shutdown(&mut self) {
+        // to do
+    }
+    fn name(&self) -> String {
+        return self.name.clone();
+    }
+}
+
+impl gate_svr{
     // 判断消息流向
     fn deal_msg(&mut self, caddr: std::net::SocketAddr, proto: u16, account: i32, pb_bytes: Vec<u8>) {
         match proto {

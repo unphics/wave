@@ -15,8 +15,9 @@ use crate::alloc;
 use crate::alloc::malloc;
 use crate::gate::gate_svr::gate_svr;
 use crate::login::login_svr::login_svr;
-use crate::scene;
 use crate::scene::scene_svr::scene_svr;
+use crate::svr;
+use crate::svr::base;
 pub struct center_svr {
     name: String,
     sock: Option<UdpSocket>,
@@ -27,9 +28,8 @@ pub struct center_svr {
     mutex: Mutex<u8>,
     cond: Condvar,
 }
-
-impl center_svr {
-    pub fn new(name: String) -> Self {
+impl base for center_svr {
+    fn new(name: String) -> Self {
         return center_svr {
             name: name,
             sock: None,
@@ -41,10 +41,12 @@ impl center_svr {
             cond: Condvar::new(),
         };
     }
-    pub fn run_center(&mut self) {
-        self.run_gate();
-        self.run_login();
-        self.run_scene();
+    fn begin(&mut self) {
+        self.create_gate();
+        self.create_login();
+        self.create_scene();
+    }
+    fn run(&mut self) {
         while !self.stop {
             let mut lock = self.mutex.lock().expect("failed to lock");
             self.cond.wait_while(lock, |_| {
@@ -53,38 +55,43 @@ impl center_svr {
             println!("center: run");
         }
     }
-    pub fn shutdown(&mut self) {
+    fn end(&mut self) {}
+    fn shutdown(&mut self) {
         if self.stop == true {
             return;
         }
         self.stop = true;
         self.cond.notify_all();
     }
-    pub fn run_gate(&mut self) {
-        let p_gate = malloc(gate_svr::new("gate".to_string()));
-        self.gate_svr = p_gate.clone();
-        alloc::deref(p_gate).center_svr = self;
-        let move_gate = p_gate as usize;
+    fn name(&self) -> String {
+        return self.name.clone();
+    }
+}
+impl center_svr {
+    pub fn create_gate(&mut self) {
+        self.gate_svr = svr::create("gate".to_string());
+        alloc::deref(self.gate_svr).center_svr = self;
+        let move_gate = self.gate_svr as usize;
         let _ = thread::spawn(move || {
-            alloc::deref(move_gate as *mut gate_svr).begin_listen();
+            alloc::deref(move_gate as *mut gate_svr).begin();
         });
     }
-    pub fn run_login(&mut self) {
+    pub fn create_login(&mut self) {
         let p_login = malloc(login_svr::new("login".to_string()));
         self.login_svr = p_login.clone();
         alloc::deref(p_login).center_svr = self;
         let move_login = p_login as usize;
         let _ = thread::spawn(move || {
-            alloc::deref(move_login as *mut login_svr).run_login();
+            alloc::deref(move_login as *mut login_svr).run();
         });
     }
-    pub fn run_scene(&mut self) {
+    pub fn create_scene(&mut self) {
         let p_scene = malloc(scene_svr::new("scene".to_string()));
         self.scene_svr = p_scene.clone();
         alloc::deref(p_scene).center_svr = self;
         let move_scene = p_scene as usize;
         let _ = thread::spawn(move || {
-            alloc::deref(move_scene as *mut scene_svr).run_scene();
+            alloc::deref(move_scene as *mut scene_svr).run();
         });
     }
     pub fn route_scene(&self) -> *mut scene_svr {
