@@ -33,9 +33,7 @@ impl base for gate_svr {
             proxys: Mutex::new(HashMap::new()),
         }
     }
-    fn begin(&mut self) {
-        self.run();
-    }
+    fn begin(&mut self) {}
     fn run(&mut self) {
         self.sock = Some(UdpSocket::bind(String::from(cfg::SERVER_ADDR)).expect("failed to bind addr"));
         loop {
@@ -49,10 +47,15 @@ impl base for gate_svr {
         }
     }
     fn end(&mut self) {
-        // to do
+        let mut proxys = self.proxys.lock().unwrap();
+        for proxy in proxys.iter() {
+            // todo proxy:end
+            alloc::free(*proxy.1);
+        }
+        proxys.clear();
     }
     fn shutdown(&mut self) {
-        // to do
+        drop(self.sock.as_ref().unwrap().try_clone());
     }
     fn name(&self) -> String {
         return self.name.clone();

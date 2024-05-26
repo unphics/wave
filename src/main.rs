@@ -43,7 +43,7 @@ fn wave_run() {
     // handle.join().expect("center.join");
     wait_cmd();
     alloc::deref(move_center as *mut center_svr).shutdown();
-    alloc::free(p_center);
+    svr::destroy(p_center);
 }
 fn wait_cmd() {
     println!("wait cmd ...");

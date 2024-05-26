@@ -9,8 +9,13 @@ pub trait base {
     fn name(&self) -> String;
 }
 
-pub fn create<T>(name: String) -> *mut T where T: base{
+pub fn create<T>(name: String) -> *mut T where T: base {
     let p = alloc::malloc(T::new(name));
     alloc::deref(p).begin();
     return p;
+}
+
+pub fn destroy<T>(p_svr: *mut T) where T: base {
+    alloc::deref(p_svr).end();
+    alloc::free(p_svr);
 }

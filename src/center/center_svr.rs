@@ -12,12 +12,14 @@ use std::sync::Mutex;
 use std::thread;
 
 use crate::alloc;
+use crate::alloc::deref;
 use crate::alloc::malloc;
 use crate::gate::gate_svr::gate_svr;
 use crate::login::login_svr::login_svr;
 use crate::scene::scene_svr::scene_svr;
 use crate::svr;
 use crate::svr::base;
+use crate::svr::destroy;
 pub struct center_svr {
     name: String,
     sock: Option<UdpSocket>,
@@ -55,7 +57,14 @@ impl base for center_svr {
             println!("center: run");
         }
     }
-    fn end(&mut self) {}
+    fn end(&mut self) {
+        alloc::deref(self.gate_svr).shutdown();
+        alloc::deref(self.login_svr).shutdown();
+        alloc::deref(self.scene_svr).shutdown();
+        svr::destroy(self.scene_svr);
+        svr::destroy(self.login_svr);
+        svr::destroy(self.gate_svr);
+    }
     fn shutdown(&mut self) {
         if self.stop == true {
             return;
@@ -73,7 +82,7 @@ impl center_svr {
         alloc::deref(self.gate_svr).center_svr = self;
         let move_gate = self.gate_svr as usize;
         let _ = thread::spawn(move || {
-            alloc::deref(move_gate as *mut gate_svr).begin();
+            alloc::deref(move_gate as *mut gate_svr).run();
         });
     }
     pub fn create_login(&mut self) {

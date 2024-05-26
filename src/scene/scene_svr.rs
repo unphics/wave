@@ -21,7 +21,12 @@ impl base for scene_svr {
             stop: false,
         }
     }
-    fn begin(&mut self) {}
+    fn begin(&mut self) {
+        let result = unsafe{recast::ffi::recast_init()};
+        if !result {
+            println!("failed to int recast");
+        }
+    }
     fn run(&mut self) {
         let sleep_duration = time::Duration::from_millis(30);
         self.begin();
@@ -30,7 +35,9 @@ impl base for scene_svr {
             thread::sleep(sleep_duration);
         }
     }
-    fn end(&mut self) {}
+    fn end(&mut self) {
+        unsafe{recast::ffi::recast_fini()};
+    }
     fn shutdown(&mut self) {
         if self.stop == true {
             return;
