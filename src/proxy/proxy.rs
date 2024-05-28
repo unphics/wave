@@ -1,6 +1,9 @@
 use std::net::UdpSocket;
-
-use crate::{alloc, gate::gate_svr::gate_svr, login::login_svr::login_svr, role::role::role, scene::scene_svr::scene_svr};
+use crate::alloc;
+use crate::gate::gate_svr::gate_svr;
+use crate::login::login_svr::login_svr;
+use crate::role::role::role;
+use crate::scene::scene_svr::scene_svr;
 /**
  * @file proxy
  * @brief 客户端代理
@@ -25,6 +28,7 @@ impl proxy {
             account: account,
             login: std::ptr::null_mut(),
             gate: std::ptr::null_mut(),
+            scene: std::ptr::null_mut(),
             sock: sock,
             role: std::ptr::null_mut(),
         };
