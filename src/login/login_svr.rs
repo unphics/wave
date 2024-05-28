@@ -29,7 +29,7 @@ use super::role_task::role_task;
 pub struct login_svr {
     name: String,
     pub center_svr: *mut center_svr,
-    proxys: HashMap<i32, *mut proxy>,
+    proxys: Mutex<HashMap<i32, *mut proxy>>,
     mutex: Mutex<u8>,
     cond: Condvar,
     stop: bool,
@@ -42,7 +42,7 @@ impl base for login_svr {
         return login_svr {
             name: name,
             center_svr: std::ptr::null_mut(),
-            proxys: HashMap::new(),
+            proxys: Mutex::new(HashMap::new()),
             mutex: Mutex::new(1),
             cond: Condvar::new(),
             stop: false,
@@ -98,7 +98,7 @@ impl login_svr {
      */
     fn create_proxy(&mut self, sock: UdpSocket, addr: std::net::SocketAddr, account: i32) {
         let p_proxy = alloc::malloc(proxy::new(addr, account, sock));
-        self.proxys.insert(account, p_proxy);
+        self.proxys.lock().unwrap().insert(account, p_proxy);
         let proxy = alloc::deref(p_proxy);
         proxy.set_login(self);
 

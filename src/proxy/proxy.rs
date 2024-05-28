@@ -1,6 +1,6 @@
 use std::net::UdpSocket;
 
-use crate::{alloc, gate::gate_svr::gate_svr, login::login_svr::login_svr, role::role::role};
+use crate::{alloc, gate::gate_svr::gate_svr, login::login_svr::login_svr, role::role::role, scene::scene_svr::scene_svr};
 /**
  * @file proxy
  * @brief 客户端代理
@@ -13,6 +13,7 @@ pub struct proxy {
     account: i32,
     login: *mut login_svr,
     gate: *mut gate_svr,
+    scene: *mut scene_svr,
     sock: UdpSocket,
     role: *mut role,
 }
@@ -62,4 +63,8 @@ impl proxy {
     pub fn set_gate(&mut self, gate: *mut gate_svr) {
         self.gate = gate;
     }
+    pub fn set_scene(&mut self, scene: *mut scene_svr) {
+        self.scene = scene;
+    }
+
 }

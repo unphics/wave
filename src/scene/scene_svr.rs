@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Mutex;
 use crate::alloc;
 use crate::proxy::proxy::proxy;
 use crate::center::center_svr::center_svr;
@@ -9,7 +10,7 @@ use crate::recast;
 pub struct scene_svr {
     name: String,
     pub center_svr: *mut center_svr,
-    proxys: HashMap<i32, *mut proxy>,
+    proxys: Mutex<HashMap<i32, *mut proxy>>,
     stop: bool,
 }
 impl base for scene_svr {
@@ -17,7 +18,7 @@ impl base for scene_svr {
         return scene_svr {
             name: name,
             center_svr: std::ptr::null_mut(),
-            proxys: HashMap::new(),
+            proxys: Mutex::new(HashMap::new()),
             stop: false,
         }
     }
@@ -54,5 +55,8 @@ impl scene_svr {
     }
     pub fn send_new_proxy(&mut self, p_proxy: *mut proxy) {
         let proxy = alloc::deref(p_proxy);
+        self.proxys.lock().unwrap().insert(proxy.account(), p_proxy);
+        proxy.set_scene(self);
+        // todo last 该写新角色进入场景的逻辑了
     }
 }
