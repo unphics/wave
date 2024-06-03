@@ -25,6 +25,7 @@ mod role;
 mod scene;
 mod recast;
 mod svr;
+mod math;
 fn main() {
     println!("====== wave begin ======");
     // pb::example();
