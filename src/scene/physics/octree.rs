@@ -83,12 +83,22 @@ impl bound_node {
                 self.list_obj.push_back(obj);
                 return;
             }
-            let best_fit_child;
+            // let mut best_fit_child;
             // todo last
             if self.children.is_none() {
                 self.split();
+                if self.children.is_none() {
+                    eprintln!("failed to create children");
+                    return;
+                }
+            }
+            for ele in self.list_obj.iter_mut() {
+                // best_fit_child = self.best_fit_child(&ele.bound.center());
             }
         }
+    }
+    pub fn best_fit_child(&self, center: &vec3f) -> i32 {
+        return (if center.x <= self.center.x {0} else {1}) + (if center.y >= self.center.y {0} else {4}) + (if center.z <= self.center.z {0} else {2});
     }
     fn split(&mut self) {
         let quarter = self.base_length / 4f32;
