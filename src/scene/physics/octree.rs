@@ -84,7 +84,6 @@ impl bound_node {
                 return;
             }
             // let mut best_fit_child;
-            // todo last
             if self.children.is_none() {
                 self.split();
                 if self.children.is_none() {
