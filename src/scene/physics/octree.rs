@@ -1,6 +1,7 @@
 use crate::math::vec::vec3f;
 use super::aabb::cube;
 use std::collections::LinkedList;
+use blue::{self, linked_list};
 
 struct obj {
     data: String,
@@ -14,7 +15,7 @@ pub struct bound_node {
     min_size: f32,
     actual_length: f32, // // Actual length of sides, taking the looseness value into account
     bound: cube,
-    list_obj: LinkedList<obj>,
+    list_obj: blue::linked_list<obj>,
     children: Option<Box<[bound_node; 8]>>,
     child_bounds: Box<[cube; 8]>,
     cfg_num_objects_allowed: u16,
@@ -28,7 +29,7 @@ impl bound_node {
             looseness: 0f32,
             actual_length: 0f32,
             bound: cube::new_zero(),
-            list_obj: LinkedList::new(),
+            list_obj: linked_list::new(),
             children: None,
             child_bounds: Box::new(std::array::from_fn(|_| cube::new_zero())),
             cfg_num_objects_allowed: 8,
@@ -38,6 +39,9 @@ impl bound_node {
     }
     pub fn get_center(&self) -> vec3f {
         self.center.clone()
+    }
+    pub fn get_bound(&self) -> cube {
+        self.bound.clone()
     }
     pub fn has_children(&self) -> bool {
         self.children.is_none()
@@ -77,13 +81,13 @@ impl bound_node {
         self.sub_add(obj, bound);
         true
     }
-    fn sub_add(&mut self, obj: obj, bound: cube) { // todo 这俩参数其实是一个参数
+    pub fn sub_add(&mut self, obj: obj, bound: cube) { // todo 这俩参数其实是一个参数
         if !self.has_children() {
-            if self.list_obj.len() < self.cfg_num_objects_allowed as usize || (self.base_length / 2 as f32) < self.min_size { // todo 
-                self.list_obj.push_back(obj);
+            if self.list_obj.len() < self.cfg_num_objects_allowed as u32 || (self.base_length / 2 as f32) < self.min_size { // todo 
+                self.list_obj.insert_back(obj);
                 return;
             }
-            // let mut best_fit_child;
+            let mut best_fit_child = 0;
             if self.children.is_none() {
                 self.split();
                 if self.children.is_none() {
@@ -91,10 +95,19 @@ impl bound_node {
                     return;
                 }
             }
-            for ele in self.list_obj.iter_mut() {
-                // best_fit_child = self.best_fit_child(&ele.bound.center());
-            }
+            self.list_obj.foreach(|node| {
+                let obj = node.data.as_ref().unwrap();
+                best_fit_child = self.best_fit_child(&obj.bound.center());
+                let child= self.children.as_ref().unwrap().get(best_fit_child as usize).unwrap();
+                if bound_node::encapsulates(&child.get_bound(), &obj.bound) {
+                    // child.add(obj., bound)
+                    // todo last 不行喵的不能盲目的抄, 明天得好好看看这个数据结构
+                }
+            });
         }
+    }
+    pub fn encapsulates(outer: &cube, inner: &cube) -> bool {
+        return outer.contain(inner);
     }
     pub fn best_fit_child(&self, center: &vec3f) -> i32 {
         return (if center.x <= self.center.x {0} else {1}) + (if center.y >= self.center.y {0} else {4}) + (if center.z <= self.center.z {0} else {2});

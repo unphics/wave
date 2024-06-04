@@ -3,5 +3,5 @@
 todo list:
     参数很多的函数封成struct算球, gate_svr就有很多一样的参数传来传去
     缺个物理模块, 就抄这个吧:https://www.youtube.com/watch?v=5BJs02PaSok&list=PLEETnX-uPtBXm1KEr_2zQ6K_0hoGH6JJ0&index=5
-        依赖个场景管理, 抄个这:https://github.com/Nition/UnityOctree
-            八叉树的node管理obj的list缺个好用的实现, 先写个link_list吧
+        依赖个场景管理, 抄个这:https://github.com/Nition/UnityOctree -- doing
+            八叉树的node管理obj的list缺个好用的实现, 先写个link_list吧 -- done

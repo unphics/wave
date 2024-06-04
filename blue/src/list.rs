@@ -103,7 +103,12 @@ mod tests {
             }
         });
         assert_eq!(list.len(), 1);
-        deref(deref(list.sentinel()).next).remove_self();
+        let node = deref(list.sentinel()).next;
+        deref(node).cut_self();
+        let list2 = linked_list::new();
+        list2.insert_back_node(node);
         assert_eq!(list.len(), 0);
+        assert_eq!(list2.len(), 1);
+        assert_eq!(deref(deref(list2.sentinel()).next).data.unwrap(), 88);
     }
 }
