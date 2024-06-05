@@ -1,6 +1,5 @@
 use crate::math::vec::vec3f;
 use super::aabb::cube;
-use std::collections::LinkedList;
 use blue::{self, linked_list};
 
 struct obj {
