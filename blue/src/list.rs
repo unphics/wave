@@ -13,10 +13,6 @@ impl<T> linked_node<T> {
     pub fn new_null() -> *mut Self {
         malloc(linked_node {data: None, prev: std::ptr::null_mut(), next: std::ptr::null_mut()})
     }
-    // pub fn remove_self(&mut self) {
-    //     deref(self).cut_self();
-    //     free(self);
-    // }
     pub fn cut_self(&self) {
         if self.prev != std::ptr::null_mut() {deref(self.prev).next = self.next}
         if self.next != std::ptr::null_mut() {deref(self.next).prev = self.prev}
@@ -65,6 +61,27 @@ impl<T> linked_list<T> {
             cur = deref(cur).next;
         }
         return len;
+    }
+    pub fn iter(&self) -> linked_list_iter<T> {
+        linked_list_iter {
+            cur: self.sentinel,
+            sentinel: self.sentinel,
+        }
+    }
+}
+pub struct linked_list_iter<T> {
+    cur: *mut linked_node<T>,
+    sentinel: *mut linked_node<T>,
+}
+impl<T> Iterator for linked_list_iter<T> {
+    type Item = *mut linked_node<T>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.cur.is_null() || deref(self.cur).next == self.sentinel {
+            None
+        } else {
+            self.cur = deref(self.cur).next;
+            Some(self.cur)
+        }
     }
 }
 impl<T> Drop for linked_list<T> {
@@ -121,6 +138,11 @@ mod tests {
         list3.insert_back(1);
         list3.insert_back(1);
         list3.insert_back(1);
+        let mut count3 = 0;
+        for it in list3.iter() {
+            count3 += 1;
+        }
+        assert_eq!(count3, 6);
         let mut count2 = 0;
         let list4 = linked_list::new();
         list3.foreach(|node| {
