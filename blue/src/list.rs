@@ -13,10 +13,10 @@ impl<T> linked_node<T> {
     pub fn new_null() -> *mut Self {
         malloc(linked_node {data: None, prev: std::ptr::null_mut(), next: std::ptr::null_mut()})
     }
-    pub fn remove_self(&mut self) {
-        deref(self).cut_self();
-        free(self);
-    }
+    // pub fn remove_self(&mut self) {
+    //     deref(self).cut_self();
+    //     free(self);
+    // }
     pub fn cut_self(&self) {
         if self.prev != std::ptr::null_mut() {deref(self.prev).next = self.next}
         if self.next != std::ptr::null_mut() {deref(self.next).prev = self.prev}
@@ -72,7 +72,8 @@ impl<T> Drop for linked_list<T> {
         let mut cur = deref(self.sentinel).next;
         while cur != self.sentinel {
             let next = deref(cur).next;
-            deref(cur).remove_self();
+            deref(cur).cut_self();
+            free(deref(cur));
             cur = next;
         }
         free(self.sentinel);
@@ -81,6 +82,7 @@ impl<T> Drop for linked_list<T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::free;
     use crate::malloc;
     use super::linked_node;
     use super::linked_list;
@@ -96,7 +98,8 @@ mod tests {
         let mut count = 2;
         list.foreach(move |node| {
             if count != 0 {
-                node.remove_self();
+                node.cut_self();
+                free(node);
                 count = count - 1;
             } else {
                 assert_eq!(node.data.unwrap(), 88);
@@ -110,5 +113,23 @@ mod tests {
         assert_eq!(list.len(), 0);
         assert_eq!(list2.len(), 1);
         assert_eq!(deref(deref(list2.sentinel()).next).data.unwrap(), 88);
+
+        let list3 = linked_list::new();
+        list3.insert_back(1);
+        list3.insert_back(1);
+        list3.insert_back(1);
+        list3.insert_back(1);
+        list3.insert_back(1);
+        list3.insert_back(1);
+        let mut count2 = 0;
+        let list4 = linked_list::new();
+        list3.foreach(|node| {
+            count2 += 1;
+            node.cut_self();
+            list4.insert_back_node(node);
+        });
+        assert_eq!(count2, 6);
+        assert_eq!(list3.len(), 0);
+        assert_eq!(list4.len(), 6);
     }
 }

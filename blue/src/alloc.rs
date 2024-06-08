@@ -13,6 +13,8 @@ pub fn free<T>(ptr_deap: *mut T) {
     let layout = std::alloc::Layout::new::<T>();
     unsafe {
         std::alloc::dealloc(ptr_deap as *mut u8, layout);
+        // std::alloc::dealloc(*ptr_deap as *mut u8, layout);
+        // *ptr_deap = std::ptr::null_mut();
     }
 }
 

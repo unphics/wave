@@ -26,6 +26,10 @@ impl cube {
             return false;
         }
     }
+    pub fn intersect_cube(&self, rhs: &cube) -> bool {
+        todo!();
+        false
+    }
 }
 impl Clone for cube {
     fn clone(&self) -> Self {
