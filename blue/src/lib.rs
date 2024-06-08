@@ -12,7 +12,8 @@ pub use bounds::intersect_data::intersect_data;
 pub use bounds::aabb;
 pub use bounds::sphere::sphere;
 mod octree;
-pub use octree::bound as octree_bound;
+pub use octree::bound::node::node as octree_bound_node;
+pub use octree::bound::node::obj as octree_bound_obj;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

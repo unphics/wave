@@ -27,8 +27,12 @@ impl cube {
         }
     }
     pub fn intersect_cube(&self, rhs: &cube) -> bool {
-        todo!();
-        false
+        let dist_x = (self.center.x - rhs.center.x).abs();
+        let dist_y = (self.center.y - rhs.center.y).abs();
+        let dist_z = (self.center.z - rhs.center.z).abs();
+        dist_x <= (self.half_size + rhs.half_size) &&
+        dist_y <= (self.half_size + rhs.half_size) &&
+        dist_z <= (self.half_size + rhs.half_size)
     }
 }
 impl Clone for cube {

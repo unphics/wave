@@ -23,7 +23,7 @@ pub struct node {
     child_bounds: Box<[cube; 8]>,
     cfg_num_objects_allowed: u16,
 }
-pub trait octree_node_bound {
+pub trait octree_bound_node {
     fn new(base_length: f32, min_size: f32, looseness: f32, center: vec3f) -> Self;
     /**
      * @brief: add an object
@@ -74,7 +74,7 @@ pub trait octree_node_bound {
     fn _encapsulates(outer: &cube, inner: &cube) -> bool;
     fn _should_merge(&self) -> bool;
 }
-impl octree_node_bound for node {
+impl octree_bound_node for node {
     fn new(base_length: f32, min_size: f32, looseness: f32, center: vec3f) -> Self {
         let mut new = Self{
             center: vec3f::new_zero(),
@@ -131,8 +131,13 @@ impl octree_node_bound for node {
             return;
         }
         // check objects in root
-        let best_fit = -1;
         todo!();
+        let best_fit = -1;
+        for pnode in self.list_obj.iter() {
+            let obj = deref(deref(pnode).data.unwrap());
+            let new_best_fit = self.best_fit_child(&obj.bound.center);
+            // if 
+        }
     }
     /**
      * @brief set values for this node
@@ -199,14 +204,12 @@ impl octree_node_bound for node {
     }
     fn is_colliding_bound(&self, rhs: &cube) -> bool {
         if self.bound.intersect_cube(rhs) { return false; }
-        let mut ret = false;
-        self.list_obj.foreach(|node| {
-            let obj = deref(node.data.unwrap());
+        for node in self.list_obj.iter() {
+            let obj = deref(deref(node).data.unwrap());
             if obj.bound.intersect_cube(rhs) {
-                ret = true;
+                return true;
             }
-        });
-        if ret {return true;}
+        }
         if self.has_children() {
             for child in self.children {
                 if deref(child).is_colliding_bound(rhs) {
