@@ -53,6 +53,9 @@ checksum = "cf4b9d6a944f767f8e5e0db018570623c85f3d925ac718db4e06d0187adb21c1"
 [[package]]
 name = "blue"
 version = "0.1.0"
+dependencies = [
+ "shut_up",
+]
 
 [[package]]
 name = "bytes"
@@ -389,6 +392,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
+name = "shut_up"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c26df9e18d8785fefe272a10027f894a6ad97670d99fd452a8c93f98047517a"
+
+[[package]]
 name = "signal-hook-registry"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -534,6 +543,7 @@ dependencies = [
  "prost",
  "prost-build",
  "prost-types",
+ "shut_up",
  "sqlite",
  "tokio",
 ]
