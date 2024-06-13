@@ -1,0 +1,14 @@
+{
+    "id": "10001",
+    "name": "game_info",
+    "type": "proto",
+    "properties": {
+        "speed": "100",
+        "acc": "10",
+        "dir": {
+            "x": 100,
+            "y": 20,
+            "z": 140
+        }
+    }
+}

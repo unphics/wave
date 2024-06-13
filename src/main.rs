@@ -26,11 +26,13 @@ mod scene;
 mod recast;
 mod svr;
 mod math;
+
+use my_macro;
 fn main() {
     println!("====== wave begin ======");
     // pb::example();
     // udp::udp_chat::udp_chat();
-    wave_run();
+    // wave_run();
 }
 
 fn wave_run() {

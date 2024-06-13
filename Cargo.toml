@@ -11,6 +11,7 @@ edition = "2021"
 
 [dependencies]
 blue = {path = "./blue"}
+my_macro = {path = "./libs/my_macro"}
 tokio = {version = "1", features = ["full"]}
 prost = "0.7" # protobuf库
 prost-types = {version = "0.7", optional = true}
